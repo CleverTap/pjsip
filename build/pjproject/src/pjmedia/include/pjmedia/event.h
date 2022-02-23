@@ -1,4 +1,4 @@
-/* $Id: event.h 6005 2019-05-26 13:18:02Z riza $ */
+/* $Id$ */
 /* 
  * Copyright (C) 2011-2011 Teluu Inc. (http://www.teluu.com)
  *

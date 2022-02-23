@@ -54,9 +54,10 @@ function opus() {
 # pjsip
 PJSIP_DIR="${BUILD_DIR}/pjproject"
 function pjsip() {
-    "${__DIR__}/pjsip.sh" "${PJSIP_DIR}" --with-openssl "${OPENSSL_DIR}" --with-opus "${OPUS_DIR}/dependencies"
+    #"${__DIR__}/pjsip.sh" "${PJSIP_DIR}" --with-openssl "${OPENSSL_DIR}" --with-opus "${OPUS_DIR}/dependencies"
+    "${__DIR__}/pjsip.sh" "${PJSIP_DIR}" 
 }
 
-openssl
-opus
+#openssl
+#opus
 pjsip
