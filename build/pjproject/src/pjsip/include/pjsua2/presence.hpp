@@ -176,18 +176,6 @@ public:
 
 
 /**
- * This structure contains parameters for Buddy::onBuddyEvSubState() callback.
- */
-struct OnBuddyEvSubStateParam
-{
-    /**
-     * * The event which triggers state change event.
-     */
-    SipEvent    e;
-};
-
-
-/**
  * Buddy.
  */
 class Buddy
@@ -281,17 +269,6 @@ public:
      */
     virtual void onBuddyState()
     {}
-
-    /**
-     * Notify application when the state of client subscription session
-     * associated with a buddy has changed. Application may use this
-     * callback to retrieve more detailed information about the state
-     * changed event.
-     *
-     * @param prm	Callback parameter.
-     */
-    virtual void onBuddyEvSubState(OnBuddyEvSubStateParam &prm)
-    { PJ_UNUSED_ARG(prm); }
      
 private:
      /**

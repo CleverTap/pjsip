@@ -691,25 +691,15 @@ struct OnCallSdpCreatedParam
 struct OnStreamCreatedParam
 {
     /**
-     * Media stream, read-only.
+     * Media stream.
      */
     MediaStream stream;
     
     /**
-     * Stream index in the media session, read-only.
+     * Stream index in the media session.
      */
     unsigned    streamIdx;
     
-    /**
-     * Specify if PJSUA2 should take ownership of the port returned in
-     * the pPort parameter below. If set to PJ_TRUE,
-     * pjmedia_port_destroy() will be called on the port when it is
-     * no longer needed.
-     *
-     * Default: PJ_FALSE
-     */
-    bool 	destroyPort;
-
     /**
      * On input, it specifies the media port of the stream. Application
      * may modify this pointer to point to different media port to be
