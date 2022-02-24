@@ -14,7 +14,7 @@ function download() {
 
 DEVELOPER=$(xcode-select --print-path)
 
-IPHONEOS_DEPLOYMENT_VERSION=${IOS_MIN_SDK_VERSION:-"9.0"}
+IPHONEOS_DEPLOYMENT_VERSION=${IOS_MIN_SDK_VERSION:-"10.0"}
 IPHONEOS_PLATFORM=$(xcrun --sdk iphoneos --show-sdk-platform-path)
 IPHONEOS_SDK=$(xcrun --sdk iphoneos --show-sdk-path)
 
