@@ -1,6 +1,6 @@
 #!/bin/sh
 
-HAS_VIDEO=1 # set to zero to disable video
+HAS_VIDEO=0 # set to zero to disable video
 
 # see http://stackoverflow.com/a/3915420/318790
 function realpath { echo $(cd $(dirname "$1"); pwd)/$(basename "$1"); }
@@ -26,7 +26,6 @@ OSX_PLATFORM=$(xcrun --sdk macosx --show-sdk-platform-path)
 OSX_SDK=$(xcrun --sdk macosx --show-sdk-path)
 
 BASE_DIR="$1"
-#PJSIP_URL="http://www.pjsip.org/release/${PJSIP_VERSION:-2.9}/pjproject-${PJSIP_VERSION:-2.9}.tar.bz2"
 PJSIP_URL="https://github.com/pjsip/pjproject/archive/${PJSIP_VERSION}.tar.gz"
 PJSIP_DIR="$1/src"
 LIB_PATHS=("pjlib/lib" \
@@ -86,7 +85,7 @@ function configure () {
 		CONFIGURE="./configure --disable-ffmpeg --disable-sdl"
 	elif [ "$TYPE" == "ios" ]; then
 		# iOS
-		CONFIGURE="./configure-iphone"
+		CONFIGURE="./configure-iphone --disable-libwebrtc"
 		echo "#define PJ_CONFIG_IPHONE 1" >> "${PJSIP_CONFIG_PATH}"
 		echo "#undef PJ_IPHONE_OS_HAS_MULTITASKING_SUPPORT" >> "${PJSIP_CONFIG_PATH}"
 		echo "#define PJ_IPHONE_OS_HAS_MULTITASKING_SUPPORT 0" >> "${PJSIP_CONFIG_PATH}" # for iOS 9+
