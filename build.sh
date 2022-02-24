@@ -2,10 +2,10 @@
 
 # environment variables
 export OPENSSL_VERSION="1.1.1c" # specify the openssl version to use
-export PJSIP_VERSION="2.7.2"
+export PJSIP_VERSION="2.11.1"
 export OPUS_VERSION="1.3.1"
 export MACOS_MIN_SDK_VERSION="10.12"
-export IOS_MIN_SDK_VERSION="9.0"
+export IOS_MIN_SDK_VERSION="10.0"
 
 # see http://stackoverflow.com/a/3915420/318790
 function realpath { echo $(cd $(dirname "$1"); pwd)/$(basename "$1"); }
@@ -54,7 +54,6 @@ function opus() {
 # pjsip
 PJSIP_DIR="${BUILD_DIR}/pjproject"
 function pjsip() {
-    #"${__DIR__}/pjsip.sh" "${PJSIP_DIR}" --with-openssl "${OPENSSL_DIR}" --with-opus "${OPUS_DIR}/dependencies"
     "${__DIR__}/pjsip.sh" "${PJSIP_DIR}" 
 }
 
