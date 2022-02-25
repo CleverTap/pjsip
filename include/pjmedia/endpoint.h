@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: endpoint.h 4474 2013-04-16 09:12:59Z ming $ */
 /* 
  * Copyright (C) 2008-2011 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -40,7 +40,6 @@
 #include "../pjmedia/codec.h"
 #include "../pjmedia/sdp.h"
 #include "../pjmedia/transport.h"
-#include "../pjmedia-audiodev/audiodev.h"
 
 
 PJ_BEGIN_DECL
@@ -60,35 +59,12 @@ typedef enum pjmedia_endpt_flag
 
 } pjmedia_endpt_flag;
 
-/**
- * This structure specifies various settings that can be passed when creating
- * audio/video sdp.
- */
-typedef struct pjmedia_endpt_create_sdp_param
-{
-    /**
-     * Direction of the media.
-     *
-     * Default: PJMEDIA_DIR_ENCODING_DECODING
-     */
-    pjmedia_dir dir;
-
-} pjmedia_endpt_create_sdp_param;
 
 /**
  * Type of callback to register to pjmedia_endpt_atexit().
  */
 typedef void (*pjmedia_endpt_exit_callback)(pjmedia_endpt *endpt);
 
-
-/**
- * Call this function to initialize \a pjmedia_endpt_create_sdp_param with default 
- * values.
- *
- * @param param	    The param to be initialized.
- */
-PJ_DECL(void)
-pjmedia_endpt_create_sdp_param_default(pjmedia_endpt_create_sdp_param *param);
 
 /**
  * Create an instance of media endpoint.
@@ -105,50 +81,10 @@ pjmedia_endpt_create_sdp_param_default(pjmedia_endpt_create_sdp_param *param);
  *
  * @return		PJ_SUCCESS on success.
  */
-PJ_DECL(pj_status_t) pjmedia_endpt_create2(pj_pool_factory *pf,
+PJ_DECL(pj_status_t) pjmedia_endpt_create( pj_pool_factory *pf,
 					   pj_ioqueue_t *ioqueue,
 					   unsigned worker_cnt,
 					   pjmedia_endpt **p_endpt);
-
-/**
- * Create an instance of media endpoint and initialize audio subsystem.
- *
- * @param pf		Pool factory, which will be used by the media endpoint
- *			throughout its lifetime.
- * @param ioqueue	Optional ioqueue instance to be registered to the 
- *			endpoint. The ioqueue instance is used to poll all RTP
- *			and RTCP sockets. If this argument is NULL, the 
- *			endpoint will create an internal ioqueue instance.
- * @param worker_cnt	Specify the number of worker threads to be created
- *			to poll the ioqueue.
- * @param p_endpt	Pointer to receive the endpoint instance.
- *
- * @return		PJ_SUCCESS on success.
- */
-PJ_INLINE(pj_status_t) pjmedia_endpt_create(pj_pool_factory *pf,
-					    pj_ioqueue_t *ioqueue,
-					    unsigned worker_cnt,
-					    pjmedia_endpt **p_endpt)
-{
-    /* This function is inlined to avoid build problem due to circular
-     * dependency, i.e: this function prevents pjmedia's dependency on
-     * pjmedia-audiodev.
-     */
-
-    pj_status_t status;
-
-    /* Sound */
-    status = pjmedia_aud_subsys_init(pf);
-    if (status != PJ_SUCCESS)
-        return status;
-
-    status = pjmedia_endpt_create2(pf, ioqueue, worker_cnt, p_endpt);
-    if (status != PJ_SUCCESS) {
-        pjmedia_aud_subsys_shutdown();
-    }
-    
-    return status;
-}
 
 /**
  * Destroy media endpoint instance.
@@ -157,25 +93,7 @@ PJ_INLINE(pj_status_t) pjmedia_endpt_create(pj_pool_factory *pf,
  *
  * @return		PJ_SUCCESS on success.
  */
-PJ_DECL(pj_status_t) pjmedia_endpt_destroy2(pjmedia_endpt *endpt);
-
-/**
- * Destroy media endpoint instance and shutdown audio subsystem.
- *
- * @param endpt		Media endpoint instance.
- *
- * @return		PJ_SUCCESS on success.
- */
-PJ_INLINE(pj_status_t) pjmedia_endpt_destroy(pjmedia_endpt *endpt)
-{
-    /* This function is inlined to avoid build problem due to circular
-     * dependency, i.e: this function prevents pjmedia's dependency on
-     * pjmedia-audiodev.
-     */
-     pj_status_t status = pjmedia_endpt_destroy2(endpt);
-     pjmedia_aud_subsys_shutdown();
-     return status;
-}
+PJ_DECL(pj_status_t) pjmedia_endpt_destroy(pjmedia_endpt *endpt);
 
 /**
  * Change the value of a flag.
@@ -319,18 +237,16 @@ PJ_DECL(pj_status_t) pjmedia_endpt_create_base_sdp(pjmedia_endpt *endpt,
  * @param endpt		The media endpoint.
  * @param pool		Pool to allocate memory from.
  * @param si		Socket information.
- * @param options	Options parameter, can be NULL. If set to NULL,
- *			default values will be used.
+ * @param options	Option flags, must be zero for now.
  * @param p_m		Pointer to receive the created SDP media.
  *
  * @return		PJ_SUCCESS on success, or the appropriate error code.
  */
-PJ_DECL(pj_status_t)
-pjmedia_endpt_create_audio_sdp(pjmedia_endpt *endpt,
-                               pj_pool_t *pool,
-                               const pjmedia_sock_info *si,
-                               const pjmedia_endpt_create_sdp_param *options,
-                               pjmedia_sdp_media **p_m);
+PJ_DECL(pj_status_t) pjmedia_endpt_create_audio_sdp(pjmedia_endpt *endpt,
+                                                    pj_pool_t *pool,
+                                                    const pjmedia_sock_info*si,
+                                                    unsigned options,
+                                                    pjmedia_sdp_media **p_m);
 
 /**
  * Create SDP media line for video media.
@@ -338,18 +254,16 @@ pjmedia_endpt_create_audio_sdp(pjmedia_endpt *endpt,
  * @param endpt		The media endpoint.
  * @param pool		Pool to allocate memory from.
  * @param si		Socket information.
- * @param options	Options parameter, can be NULL. If set to NULL,
- *			default values will be used.
+ * @param options	Option flags, must be zero for now.
  * @param p_m		Pointer to receive the created SDP media.
  *
  * @return		PJ_SUCCESS on success, or the appropriate error code.
  */
-PJ_DECL(pj_status_t)
-pjmedia_endpt_create_video_sdp(pjmedia_endpt *endpt,
-                               pj_pool_t *pool,
-                               const pjmedia_sock_info *si,
-                               const pjmedia_endpt_create_sdp_param *options,
-                               pjmedia_sdp_media **p_m);
+PJ_DECL(pj_status_t) pjmedia_endpt_create_video_sdp(pjmedia_endpt *endpt,
+                                                    pj_pool_t *pool,
+                                                    const pjmedia_sock_info*si,
+                                                    unsigned options,
+                                                    pjmedia_sdp_media **p_m);
 
 /**
  * Dump media endpoint capabilities.

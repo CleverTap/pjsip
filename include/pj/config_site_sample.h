@@ -321,7 +321,7 @@
 
     /* Disable some codecs */
     #define PJMEDIA_HAS_L16_CODEC		0
-    //#define PJMEDIA_HAS_G722_CODEC		0
+    #define PJMEDIA_HAS_G722_CODEC		0
 
     /* Use the built-in CoreAudio's iLBC codec (yay!) */
     #define PJMEDIA_HAS_ILBC_CODEC		1
@@ -365,6 +365,8 @@
  */
 #if PJ_CONFIG_ANDROID
 
+    #define PJ_ANDROID                          1
+
     /*
      * PJLIB settings.
      */
@@ -385,11 +387,11 @@
 
     /* Disable some codecs */
     #define PJMEDIA_HAS_L16_CODEC		0
-    //#define PJMEDIA_HAS_G722_CODEC		0
+    #define PJMEDIA_HAS_G722_CODEC		0
 
     /* Fine tune Speex's default settings for best performance/quality */
     #define PJMEDIA_CODEC_SPEEX_DEFAULT_QUALITY	5
-    
+
     /*
      * PJSIP settings.
      */
@@ -411,9 +413,6 @@
     #define PJSIP_MAX_DIALOG_COUNT 		31
     #define PJSUA_MAX_CALLS			4
 
-    /* Separate worker thread for timer and ioqueue */
-    // #define PJSUA_SEPARATE_WORKER_FOR_TIMER	1
-
     /* Other pjsua settings */
     #define PJSUA_MAX_ACC			4
     #define PJSUA_MAX_PLAYERS			4
@@ -434,8 +433,6 @@
     #define PJMEDIA_HAS_SPEEX_AEC			0
     #undef PJMEDIA_AUDIO_DEV_HAS_PORTAUDIO
     #define PJMEDIA_AUDIO_DEV_HAS_PORTAUDIO		0
-    #undef PJMEDIA_AUDIO_DEV_HAS_ALSA
-    #define PJMEDIA_AUDIO_DEV_HAS_ALSA			0    
 #endif
 
 
@@ -475,6 +472,7 @@
 #   define PJ_DEBUG			0
 #   define PJSIP_SAFE_MODULE		0
 #   define PJ_HAS_STRICMP_ALNUM		0
+#   define PJ_HASH_USE_OWN_TOLOWER	1
 #   define PJSIP_UNESCAPE_IN_PLACE	1
 
 #   if defined(PJ_WIN32) || defined(PJ_WIN64) 

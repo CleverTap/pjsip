@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: sip_dialog.h 4173 2012-06-20 10:39:05Z ming $ */
 /* 
  * Copyright (C) 2008-2011 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -25,6 +25,7 @@
  * @file sip_dialog.h
  * @brief SIP Dialog abstraction
  */
+
 #include "../pjsip/sip_msg.h"
 #include "../pjsip/sip_auth.h"
 #include "../pjsip/sip_errno.h"
@@ -59,15 +60,6 @@
 
 PJ_BEGIN_DECL
 
-
-/* Deprecated API pjsip_dlg_create_uas() due to a fatal bug of possible
- * premature dialog destroy. Application should not change this setting,
- * unless it uses single worker thread.
- * See also https://trac.pjsip.org/repos/ticket/1902.
- */
-#ifndef DEPRECATED_FOR_TICKET_1902
-#  define DEPRECATED_FOR_TICKET_1902      1
-#endif
 
 /**
  * This structure is used to describe dialog's participants, which in this
@@ -140,10 +132,10 @@ struct pjsip_dialog
     /* Dialog's system properties. */
     char		obj_name[PJ_MAX_OBJ_NAME];  /**< Standard id.	    */
     pj_pool_t	       *pool;	    /**< Dialog's pool.			    */
+    pj_mutex_t	       *mutex_;	    /**< Dialog's mutex. Do not call!!
+					 Use pjsip_dlg_inc_lock() instead!  */
     pjsip_user_agent   *ua;	    /**< User agent instance.		    */
     pjsip_endpoint     *endpt;	    /**< Endpoint instance.		    */
-    pj_grp_lock_t      *grp_lock_;  /**< Dialog's grp lock. Do not call!!
-					 Use pjsip_dlg_inc_lock() instead!  */
 
     /** The dialog set which this dialog belongs (opaque type). */
     void	       *dlg_set;
@@ -164,7 +156,6 @@ struct pjsip_dialog
     pjsip_route_hdr	route_set;  /**< Route set.			    */
     pj_bool_t		route_set_frozen; /**< Route set has been set.	    */
     pjsip_auth_clt_sess	auth_sess;  /**< Client authentication session.	    */
-    pj_str_t		initial_dest;/**< Initial destination host.  	    */
 
     /** Session counter. */
     int			sess_count; /**< Number of sessions.		    */
@@ -191,51 +182,6 @@ struct pjsip_dialog
     pjsip_host_port     via_addr;   /**< Via address.	                    */
     const void         *via_tp;     /**< Via transport.	                    */
 };
-
-/**
- * The parameter for \a pjsip_dlg_create_uac2().
- */
-typedef struct pjsip_dlg_create_uac_param {
-    /**
-     * The user agent module instance.
-     */
-    pjsip_user_agent *ua;
-
-    /**
-     * Dialog local URI (i.e. From header).
-     */
-    pj_str_t local_uri;
-
-    /**
-     * Optional dialog local Contact to be put as Contact header value,
-     * hence the format must follow RFC 3261 Section 20.10:
-     * When the header field value contains a display name, the URI including
-     * all URI parameters is enclosed in "<" and ">".  If no "<" and ">" are
-     * present, all parameters after the URI are header parameters, not
-     * URI parameters.  The display name can be tokens, or a quoted string,
-     * if a larger character set is desired. If this argument is NULL,
-     * the Contact will be taken from the local URI.
-     */
-    pj_str_t local_contact;
-
-    /**
-     * Dialog remote URI (i.e. To header).
-     */
-    pj_str_t remote_uri;
-
-    /**
-     * Optional initial remote target. If this argument is NULL, the initial 
-     * target will be set to remote URI.
-     */
-    pj_str_t target;
-
-    /**
-     * Optional group lock to use by this dialog. If the value is NULL, 
-     * the dialog will create its own group lock.
-     */
-    pj_grp_lock_t *grp_lock;
-
-} pjsip_dlg_create_uac_param;
 
 
 /**
@@ -293,26 +239,7 @@ PJ_DECL(pj_status_t) pjsip_dlg_create_uac( pjsip_user_agent *ua,
 					   const pj_str_t *target,
 					   pjsip_dialog **p_dlg);
 
-/**
- * Variant of pjsip_dlg_create_uac() with additional parameter to specify
- * the group lock to use. Group lock can be used to synchronize locking
- * among several objects to prevent deadlock, and to synchronize the
- * lifetime of objects sharing the same group lock.
- *
- * See \a pjsip_dlg_create_uac() for general info about this function.
- *
- * @param param		    The parameter, refer to
- *			    \a pjsip_dlg_create_uac_param
- * @param p_dlg		    Pointer to receive the dialog.
- *
- * @return		    PJ_SUCCESS on success.
- */
-PJ_DECL(pj_status_t) pjsip_dlg_create_uac2(
-				const pjsip_dlg_create_uac_param *create_param,
-				pjsip_dialog **p_dlg);
 
-
-#if !DEPRECATED_FOR_TICKET_1902
 /**
  * Initialize UAS dialog from the information found in the incoming request 
  * that creates a dialog (such as INVITE, REFER, or SUBSCRIBE), and set the 
@@ -352,50 +279,6 @@ PJ_DECL(pj_status_t) pjsip_dlg_create_uas(  pjsip_user_agent *ua,
 					    pjsip_rx_data *rdata,
 					    const pj_str_t *contact,
 					    pjsip_dialog **p_dlg);
-#endif
-
-
-/**
- * Initialize UAS dialog from the information found in the incoming request 
- * that creates a dialog (such as INVITE, REFER, or SUBSCRIBE), and set the 
- * local Contact to contact. If contact is not specified, the local contact 
- * is initialized from the URI in the To header in the request. 
- *
- * This function will also create UAS transaction for the incoming request,
- * and associate the transaction to the rdata. Application can query the
- * transaction used to handle this request by calling #pjsip_rdata_get_tsx()
- * after this function returns.
- *
- * Note that initially, the session count in the dialog will be initialized 
- * to 1 (one), and the dialog is locked. Application needs to explicitly call
- * #pjsip_dlg_dec_lock() to release the lock and decrease the session count.
- *
- *
- * @param ua		    The user agent module instance.
- * @param rdata		    The incoming request that creates the dialog,
- *			    such as INVITE, SUBSCRIBE, or REFER.
- * @param contact	    Optional dialog local Contact to be put as Contact
- *			    header value, hence the format must follow
- *			    RFC 3261 Section 20.10:
- *			    When the header field value contains a display 
- *			    name, the URI including all URI parameters is 
- *			    enclosed in "<" and ">".  If no "<" and ">" are 
- *			    present, all parameters after the URI are header
- *			    parameters, not URI parameters.  The display name 
- *			    can be tokens, or a quoted string, if a larger 
- *			    character set is desired.
- *			    If this argument is NULL, the local contact will be
- *			    initialized from the value of To header in the
- *			    request.
- * @param p_dlg		    Pointer to receive the dialog.
- *
- * @return		    PJ_SUCCESS on success.
- */
-PJ_DECL(pj_status_t)
-pjsip_dlg_create_uas_and_inc_lock(    pjsip_user_agent *ua,
-				      pjsip_rx_data *rdata,
-				      const pj_str_t *contact,
-				      pjsip_dialog **p_dlg);
 
 
 /**
@@ -478,9 +361,8 @@ PJ_DECL(pj_status_t) pjsip_dlg_terminate( pjsip_dialog *dlg );
  * for UAC dialog, before any request is sent. After dialog has been 
  * established, the route set can not be changed.
  *
- * For UAS dialog, the route set will be initialized in
- * pjsip_dlg_create_uas_and_inc_lock() from the Record-Route headers in
- * the incoming request.
+ * For UAS dialog,the route set will be initialized in pjsip_dlg_create_uas()
+ * from the Record-Route headers in the incoming request.
  *
  * The route_set argument is standard list of Route headers (i.e. with 
  * sentinel).
@@ -601,17 +483,6 @@ PJ_DECL(pj_status_t) pjsip_dlg_try_inc_lock( pjsip_dialog *dlg );
  */
 PJ_DECL(void) pjsip_dlg_dec_lock( pjsip_dialog *dlg );
 
-/**
- * Get the group lock for the SIP dialog. Note that prior to calling this
- * method, it is recommended to hold reference to the dialog
- * (e.g: call #pjsip_dlg_inc_session() or #pjsip_dlg_inc_lock()).
- *
- * @param dlg		    The dialog.
- *
- * @return		    The group lock.
- */
-PJ_DECL(pj_grp_lock_t *) pjsip_dlg_get_lock( pjsip_dialog *dlg );
-
 
 /**
  * Get the dialog instance in the incoming rdata. If an incoming message 
@@ -629,16 +500,6 @@ PJ_DECL(pj_grp_lock_t *) pjsip_dlg_get_lock( pjsip_dialog *dlg );
  * @return		    The dialog instance that "owns" the message.
  */
 PJ_DECL(pjsip_dialog*) pjsip_rdata_get_dlg( pjsip_rx_data *rdata );
-
-/**
- * Get the dialog instance for the outgoing tdata. Returns NULL if the message
- * wasn't sent from a dialog.
- *
- * @param tdata		    Outgoing message buffer.
- *
- * @return		    The dialog instance that "owns" the message.
- */
-PJ_DECL(pjsip_dialog*) pjsip_tdata_get_dlg( pjsip_tx_data *tdata );
 
 /**
  * Get the associated dialog for the specified transaction, if any.

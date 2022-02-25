@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: types.h 3774 2011-09-27 05:24:06Z nanang $ */
 /* 
  * Copyright (C) 2008-2011 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -72,79 +72,24 @@ typedef enum pjmedia_type
 
 
 /**
- * Media transport protocol and profile.
+ * Media transport protocol.
  */
 typedef enum pjmedia_tp_proto
 {
-    /* Basic transports */
-
     /** No transport type */
-    PJMEDIA_TP_PROTO_NONE	    = 0,
-
-    /** Transport unknown */
-    PJMEDIA_TP_PROTO_UNKNOWN	    = (1 << 0),
-
-    /** UDP transport */
-    PJMEDIA_TP_PROTO_UDP	    = (1 << 1),
-
-    /** RTP transport */
-    PJMEDIA_TP_PROTO_RTP	    = (1 << 2),
-
-    /** DTLS transport */
-    PJMEDIA_TP_PROTO_DTLS	    = (1 << 3),
-
-
-    /* Basic profiles */
-    
-    /** RTCP Feedback profile */
-    PJMEDIA_TP_PROFILE_RTCP_FB	    = (1 << 13),
-
-    /** Secure RTP profile */
-    PJMEDIA_TP_PROFILE_SRTP	    = (1 << 14),
-
-    /** Audio/video profile */
-    PJMEDIA_TP_PROFILE_AVP	    = (1 << 15),
-
-
-    /* Predefined transport profiles (commonly used) */
+    PJMEDIA_TP_PROTO_NONE = 0,
 
     /** RTP using A/V profile */
-    PJMEDIA_TP_PROTO_RTP_AVP	    = (PJMEDIA_TP_PROTO_RTP |
-				       PJMEDIA_TP_PROFILE_AVP),
+    PJMEDIA_TP_PROTO_RTP_AVP,
 
-    /** Secure RTP using A/V profile */
-    PJMEDIA_TP_PROTO_RTP_SAVP	    = (PJMEDIA_TP_PROTO_RTP_AVP |
-				       PJMEDIA_TP_PROFILE_SRTP),
+    /** Secure RTP */
+    PJMEDIA_TP_PROTO_RTP_SAVP,
 
-    /** Secure RTP using A/V profile and DTLS-SRTP keying */
-    PJMEDIA_TP_PROTO_DTLS_SRTP	    = (PJMEDIA_TP_PROTO_DTLS |
-				       PJMEDIA_TP_PROTO_RTP_SAVP),
-
-    /** RTP using A/V and RTCP feedback profile */
-    PJMEDIA_TP_PROTO_RTP_AVPF	    = (PJMEDIA_TP_PROTO_RTP_AVP |
-				       PJMEDIA_TP_PROFILE_RTCP_FB),
-
-    /** Secure RTP using A/V and RTCP feedback profile */
-    PJMEDIA_TP_PROTO_RTP_SAVPF	    = (PJMEDIA_TP_PROTO_RTP_SAVP |
-				       PJMEDIA_TP_PROFILE_RTCP_FB),
-
-    /** Secure RTP using A/V and RTCP feedback profile and DTLS-SRTP keying */
-    PJMEDIA_TP_PROTO_DTLS_SRTPF	    = (PJMEDIA_TP_PROTO_DTLS_SRTP |
-				       PJMEDIA_TP_PROFILE_RTCP_FB),
+    /** Unknown */
+    PJMEDIA_TP_PROTO_UNKNOWN
 
 } pjmedia_tp_proto;
 
-/**
- * Macro helper for checking if a transport protocol contains specific
- * transport and profile flags.
- */
-#define PJMEDIA_TP_PROTO_HAS_FLAG(TP_PROTO, FLAGS) \
-				    (((TP_PROTO) & (FLAGS)) == (FLAGS))
-
-/**
- * Macro helper for excluding specific flags in transport protocol.
- */
-#define PJMEDIA_TP_PROTO_TRIM_FLAG(TP_PROTO, FLAGS) ((TP_PROTO) &= ~(FLAGS))
 
 /**
  * Media direction.
@@ -257,34 +202,26 @@ typedef enum pjmedia_orient
     PJMEDIA_ORIENT_UNKNOWN,
 
     /**
-     * Natural orientation, i.e. the original orientation video will be
-     * displayed/captured without rotation.
+     * Natural orientation, e.g: sky upside on landscape view, head upside
+     * on human portrait.
      */
     PJMEDIA_ORIENT_NATURAL,
 
     /**
      * Specifies that the video/picture needs to be rotated 90 degrees
-     * from its natural orientation in clockwise direction from the user's
-     * perspective.
-     * Note that for devices with back cameras (which faces away
-     * from the user), the video will actually need to be rotated
-     * 270 degrees clockwise instead.
+     * clockwise to be displayed in natural orientation.
      */
     PJMEDIA_ORIENT_ROTATE_90DEG,
 
     /**
      * Specifies that the video/picture needs to be rotated 180 degrees
-     * from its natural orientation.
+     * clockwise to be displayed in natural orientation.
      */
     PJMEDIA_ORIENT_ROTATE_180DEG,
 
     /**
      * Specifies that the video/picture needs to be rotated 270 degrees
-     * from its natural orientation in clockwise direction from the user's
-     * perspective.
-     * Note that for devices with back cameras (which faces away
-     * from the user), the video will actually need to be rotated
-     * 90 degrees clockwise instead.
+     * clockwise to be displayed in natural orientation.
      */
     PJMEDIA_ORIENT_ROTATE_270DEG
 
@@ -305,17 +242,6 @@ typedef enum pjmedia_orient
  * @return		String.
  */
 PJ_DECL(const char*) pjmedia_type_name(pjmedia_type t);
-
-
-/**
- * Utility function to return the media type for a media name string.
- *
- * @param name		The media name string.
- *
- * @return		media type.
- */
-PJ_DECL(pjmedia_type) pjmedia_get_type(const pj_str_t *name);
-
 
 /**
  * A utility function to convert fourcc type of value to four letters string.

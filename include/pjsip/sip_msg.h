@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: sip_msg.h 4700 2014-01-02 01:25:22Z ming $ */
 /* 
  * Copyright (C) 2008-2011 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -402,18 +402,14 @@ typedef struct pjsip_status_line
  */
 typedef enum pjsip_status_code
 {
-    PJSIP_SC_NULL = 0,
-
     PJSIP_SC_TRYING = 100,
     PJSIP_SC_RINGING = 180,
     PJSIP_SC_CALL_BEING_FORWARDED = 181,
     PJSIP_SC_QUEUED = 182,
     PJSIP_SC_PROGRESS = 183,
-    PJSIP_SC_EARLY_DIALOG_TERMINATED = 199,
 
     PJSIP_SC_OK = 200,
     PJSIP_SC_ACCEPTED = 202,
-    PJSIP_SC_NO_NOTIFICATION = 204,
 
     PJSIP_SC_MULTIPLE_CHOICES = 300,
     PJSIP_SC_MOVED_PERMANENTLY = 301,
@@ -430,31 +426,15 @@ typedef enum pjsip_status_code
     PJSIP_SC_NOT_ACCEPTABLE = 406,
     PJSIP_SC_PROXY_AUTHENTICATION_REQUIRED = 407,
     PJSIP_SC_REQUEST_TIMEOUT = 408,
-    PJSIP_SC_CONFLICT = 409,
     PJSIP_SC_GONE = 410,
-    PJSIP_SC_LENGTH_REQUIRED = 411,
-    PJSIP_SC_CONDITIONAL_REQUEST_FAILED = 412,
     PJSIP_SC_REQUEST_ENTITY_TOO_LARGE = 413,
     PJSIP_SC_REQUEST_URI_TOO_LONG = 414,
     PJSIP_SC_UNSUPPORTED_MEDIA_TYPE = 415,
     PJSIP_SC_UNSUPPORTED_URI_SCHEME = 416,
-    PJSIP_SC_UNKNOWN_RESOURCE_PRIORITY = 417,
     PJSIP_SC_BAD_EXTENSION = 420,
     PJSIP_SC_EXTENSION_REQUIRED = 421,
     PJSIP_SC_SESSION_TIMER_TOO_SMALL = 422,
     PJSIP_SC_INTERVAL_TOO_BRIEF = 423,
-    PJSIP_SC_BAD_LOCATION_INFORMATION = 424,
-    PJSIP_SC_USE_IDENTITY_HEADER = 428,
-    PJSIP_SC_PROVIDE_REFERRER_HEADER = 429,
-    PJSIP_SC_FLOW_FAILED = 430,
-    PJSIP_SC_ANONIMITY_DISALLOWED = 433,
-    PJSIP_SC_BAD_IDENTITY_INFO = 436,
-    PJSIP_SC_UNSUPPORTED_CERTIFICATE = 437,
-    PJSIP_SC_INVALID_IDENTITY_HEADER = 438,
-    PJSIP_SC_FIRST_HOP_LACKS_OUTBOUND_SUPPORT = 439,
-    PJSIP_SC_MAX_BREADTH_EXCEEDED = 440,
-    PJSIP_SC_BAD_INFO_PACKAGE = 469,
-    PJSIP_SC_CONSENT_NEEDED = 470,
     PJSIP_SC_TEMPORARILY_UNAVAILABLE = 480,
     PJSIP_SC_CALL_TSX_DOES_NOT_EXIST = 481,
     PJSIP_SC_LOOP_DETECTED = 482,
@@ -468,7 +448,6 @@ typedef enum pjsip_status_code
     PJSIP_SC_REQUEST_UPDATED = 490,
     PJSIP_SC_REQUEST_PENDING = 491,
     PJSIP_SC_UNDECIPHERABLE = 493,
-    PJSIP_SC_SECURITY_AGREEMENT_NEEDED = 494,
 
     PJSIP_SC_INTERNAL_SERVER_ERROR = 500,
     PJSIP_SC_NOT_IMPLEMENTED = 501,
@@ -477,15 +456,12 @@ typedef enum pjsip_status_code
     PJSIP_SC_SERVER_TIMEOUT = 504,
     PJSIP_SC_VERSION_NOT_SUPPORTED = 505,
     PJSIP_SC_MESSAGE_TOO_LARGE = 513,
-    PJSIP_SC_PUSH_NOTIFICATION_SERVICE_NOT_SUPPORTED = 555,
     PJSIP_SC_PRECONDITION_FAILURE = 580,
 
     PJSIP_SC_BUSY_EVERYWHERE = 600,
     PJSIP_SC_DECLINE = 603,
     PJSIP_SC_DOES_NOT_EXIST_ANYWHERE = 604,
     PJSIP_SC_NOT_ACCEPTABLE_ANYWHERE = 606,
-    PJSIP_SC_UNWANTED = 607,
-    PJSIP_SC_REJECTED = 608,
 
     PJSIP_SC_TSX_TIMEOUT = PJSIP_SC_REQUEST_TIMEOUT,
     /*PJSIP_SC_TSX_RESOLVE_ERROR = 702,*/
@@ -1092,7 +1068,7 @@ typedef struct pjsip_generic_int_hdr
     /** Standard header field. */
     PJSIP_DECL_HDR_MEMBER(struct pjsip_generic_int_hdr);
     /** ivalue */
-    pj_uint32_t ivalue;
+    pj_int32_t ivalue;
 } pjsip_generic_int_hdr;
 
 
@@ -1109,7 +1085,7 @@ typedef struct pjsip_generic_int_hdr
  */
 PJ_DECL(pjsip_generic_int_hdr*) pjsip_generic_int_hdr_create( pj_pool_t *pool,
 						      const pj_str_t *hname,
-						      unsigned hvalue );
+						      int hvalue );
 
 
 /**
@@ -1132,7 +1108,7 @@ PJ_DECL(pjsip_generic_int_hdr*) pjsip_generic_int_hdr_create( pj_pool_t *pool,
 PJ_DECL(pjsip_generic_int_hdr*) pjsip_generic_int_hdr_init( pj_pool_t *pool,
 							    void *mem,
 							    const pj_str_t *hname,
-							    unsigned value );
+							    int value );
 
 /* **************************************************************************/
 
@@ -1371,10 +1347,6 @@ PJ_DECL(pjsip_cseq_hdr*) pjsip_cseq_hdr_init( pj_pool_t *pool,
 					      void *mem );
 
 /* **************************************************************************/
-
-/** Expires not specified. */
-#define PJSIP_EXPIRES_NOT_SPECIFIED	((pj_uint32_t)0xFFFFFFFFUL)
-
 /**
  * Contact header.
  * In this library, contact header only contains single URI. If a message has
@@ -1384,16 +1356,11 @@ PJ_DECL(pjsip_cseq_hdr*) pjsip_cseq_hdr_init( pj_pool_t *pool,
 typedef struct pjsip_contact_hdr
 {
     PJSIP_DECL_HDR_MEMBER(struct pjsip_contact_hdr);
-    int		    star;	    /**< The contact contains only a '*'
-    					 character 			    */
-    pjsip_uri	   *uri;	    /**< URI in the contact. 		    */
-    int		    q1000;	    /**< The "q" value times 1000
-    					 (to avoid float) 		    */
-    pj_uint32_t	    expires;	    /**< Expires parameter, otherwise
-    					 PJSIP_EXPIRES_NOT_SPECIFIED
-    					 if not present. 		    */
-    pjsip_param	    other_param;    /**< Other parameters, concatenated in
-    					 a single string. 		    */
+    int		    star;	    /**< The contact contains only a '*' character */
+    pjsip_uri	   *uri;	    /**< URI in the contact. */
+    int		    q1000;	    /**< The "q" value times 1000 (to avoid float) */
+    pj_int32_t	    expires;	    /**< Expires parameter, otherwise -1 if not present. */
+    pjsip_param	    other_param;    /**< Other parameters, concatenated in a single string. */
 } pjsip_contact_hdr;
 
 
@@ -1472,7 +1439,7 @@ typedef pjsip_generic_int_hdr pjsip_expires_hdr;
  * @return	    A new Expires header.
  */
 PJ_DECL(pjsip_expires_hdr*) pjsip_expires_hdr_create( pj_pool_t *pool,
-						      unsigned value);
+						      int value);
 
 /**
  * Initialize a preallocated memory with the header structure. This function
@@ -1491,7 +1458,7 @@ PJ_DECL(pjsip_expires_hdr*) pjsip_expires_hdr_create( pj_pool_t *pool,
  */
 PJ_DECL(pjsip_expires_hdr*) pjsip_expires_hdr_init( pj_pool_t *pool,
 						    void *mem,
-						    unsigned value );
+						    int value );
 
 
 
@@ -1595,7 +1562,7 @@ typedef pjsip_generic_int_hdr pjsip_max_fwd_hdr;
  * @return	    New Max-Forwards header instance.
  */
 PJ_DECL(pjsip_max_fwd_hdr*) 
-pjsip_max_fwd_hdr_create(pj_pool_t *pool, unsigned value);
+pjsip_max_fwd_hdr_create(pj_pool_t *pool, int value);
 
 
 /**
@@ -1614,7 +1581,7 @@ pjsip_max_fwd_hdr_create(pj_pool_t *pool, unsigned value);
  *		    location as the mem argument.
  */
 PJ_DECL(pjsip_max_fwd_hdr*) 
-pjsip_max_fwd_hdr_init( pj_pool_t *pool, void *mem, unsigned value );
+pjsip_max_fwd_hdr_init( pj_pool_t *pool, void *mem, int value );
 
 
 /* **************************************************************************/
@@ -1632,7 +1599,7 @@ typedef pjsip_generic_int_hdr pjsip_min_expires_hdr;
  * @return	    New Min-Expires header instance.
  */
 PJ_DECL(pjsip_min_expires_hdr*) pjsip_min_expires_hdr_create(pj_pool_t *pool,
-							     unsigned value);
+							     int value);
 
 
 /**
@@ -1652,7 +1619,7 @@ PJ_DECL(pjsip_min_expires_hdr*) pjsip_min_expires_hdr_create(pj_pool_t *pool,
  */
 PJ_DECL(pjsip_min_expires_hdr*) pjsip_min_expires_hdr_init( pj_pool_t *pool,
 							    void *mem,
-							    unsigned value );
+							    int value );
 
 
 /* **************************************************************************/

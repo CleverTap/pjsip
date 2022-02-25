@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: audiodev_imp.h 3553 2011-05-05 06:14:19Z nanang $ */
 /* 
  * Copyright (C) 2008-2011 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -20,7 +20,7 @@
 #ifndef __AUDIODEV_IMP_H__
 #define __AUDIODEV_IMP_H__
 
-#include "../pjmedia-audiodev/audiodev.h"
+#include <pjmedia-audiodev/audiodev.h>
 
 /**
  * @defgroup s8_audio_device_implementors_api Audio Device Implementors API

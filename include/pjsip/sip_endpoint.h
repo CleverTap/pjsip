@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: sip_endpoint.h 4275 2012-10-04 06:11:58Z bennylp $ */
 /* 
  * Copyright (C) 2008-2011 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -138,7 +138,6 @@ PJ_DECL(pj_status_t) pjsip_endpt_handle_events( pjsip_endpoint *endpt,
 PJ_DECL(pj_status_t) pjsip_endpt_handle_events2(pjsip_endpoint *endpt,
 					        const pj_time_val *max_timeout,
 					        unsigned *count);
-
 /**
  * Schedule timer to endpoint's timer heap. Application must poll the endpoint
  * periodically (by calling #pjsip_endpt_handle_events) to ensure that the
@@ -165,44 +164,6 @@ PJ_DECL(pj_status_t) pjsip_endpt_schedule_timer_dbg(pjsip_endpoint *endpt,
 PJ_DECL(pj_status_t) pjsip_endpt_schedule_timer( pjsip_endpoint *endpt,
 						 pj_timer_entry *entry,
 						 const pj_time_val *delay );
-#endif
-
-/**
- * Schedule timer to endpoint's timer heap with group lock. Application must
- * poll the endpoint periodically (by calling #pjsip_endpt_handle_events) to
- * ensure that the timer events are handled in timely manner. When the
- * timeout for the timer has elapsed, the callback specified in the entry
- * argument will be called. This function, like all other endpoint functions,
- * is thread safe.
- *
- * @param endpt	    The endpoint.
- * @param entry	    The timer entry.
- * @param delay	    The relative delay of the timer.
- * @param id_val    The value to be set to the "id" field of the timer entry
- * 		    once the timer is scheduled.
- * @param grp_lock  The group lock.
- * @return	    PJ_OK (zero) if successfull.
- */
-#if PJ_TIMER_DEBUG
-#define pjsip_endpt_schedule_timer_w_grp_lock(ept,ent,d,id,gl) \
-		pjsip_endpt_schedule_timer_w_grp_lock_dbg(ept,ent,d,id,gl,\
-							  __FILE__, __LINE__)
-
-PJ_DECL(pj_status_t) pjsip_endpt_schedule_timer_w_grp_lock_dbg(
-						    pjsip_endpoint *endpt,
-						    pj_timer_entry *entry,
-						    const pj_time_val *delay,
-						    int id_val,
-						    pj_grp_lock_t *grp_lock,
-						    const char *src_file,
-						    int src_line);
-#else
-PJ_DECL(pj_status_t) pjsip_endpt_schedule_timer_w_grp_lock(
-						 pjsip_endpoint *endpt,
-						 pj_timer_entry *entry,
-						 const pj_time_val *delay,
-						 int id_val,
-						 pj_grp_lock_t *grp_lock );
 #endif
 
 /**
@@ -430,24 +391,6 @@ PJ_DECL(pj_status_t) pjsip_endpt_set_resolver(pjsip_endpoint *endpt,
 					      pj_dns_resolver *resv);
 
 /**
- * Set the DNS external resolver implementation to use in the SIP resolver. 
- *
- * Note that naturally when implementing its own resolver, application would not
- * need the internal resolver, hence this function will also destroy the 
- * PJLIB-UTIL DNS resolver if any (e.g: set using #pjsip_endpt_set_resolver()). 
- * Application that needs it, still be able create its own instance. 
- *
- * @param res       The SIP resolver engine.
- * @param ext_res   The external resolver implementation callback. This argument
- *		    can be NULL to reset the whole external implementation. 
- *		    However, it is prohibited to reset individual callback.
- * 
- * @return	    PJ_SUCCESS on success, or the appropriate error code.
- */
-PJ_DECL(pj_status_t) pjsip_endpt_set_ext_resolver(pjsip_endpoint *endpt,
-						  pjsip_ext_resolver *ext_res);
-
-/**
  * Get the DNS resolver being used by the SIP resolver.
  *
  * @param endpt		The SIP endpoint instance.
@@ -622,8 +565,7 @@ PJ_DECL(pj_bool_t) pjsip_endpt_has_capability( pjsip_endpoint *endpt,
  * @param hname	    If htype specifies PJSIP_H_OTHER, then the header name
  *		    must be supplied in this argument. Otherwise the value
  *		    must be set to NULL.
- * @param count	    The number of tags in the array. The value must not
- *		    be greater than PJSIP_GENERIC_ARRAY_MAX_COUNT.
+ * @param count	    The number of tags in the array.
  * @param tags	    Array of tags describing the capabilities or extensions
  *		    to be added to the appropriate header.
  *

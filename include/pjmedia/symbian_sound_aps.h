@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: symbian_sound_aps.h 3553 2011-05-05 06:14:19Z nanang $ */
 /* 
  * Copyright (C) 2008-2011 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -26,7 +26,7 @@
  * @brief Sound device wrapper using Audio Proxy Server on 
  * Symbian S60 3rd edition.
  */
-#include "../pjmedia/types.h"
+#include <pjmedia/types.h>
 
 PJ_BEGIN_DECL
 

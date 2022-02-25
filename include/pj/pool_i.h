@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: pool_i.h 4298 2012-11-22 05:00:01Z nanang $ */
 /* 
  * Copyright (C) 2008-2011 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -19,7 +19,7 @@
  */
 
 
-#include "../pj/string.h"
+#include <pj/string.h>
 
 
 PJ_IDEF(pj_size_t) pj_pool_get_capacity( pj_pool_t *pool )
@@ -88,45 +88,7 @@ PJ_IDEF(pj_pool_t*) pj_pool_create( pj_pool_factory *f,
 
 PJ_IDEF(void) pj_pool_release( pj_pool_t *pool )
 {
-#if PJ_POOL_RELEASE_WIPE_DATA
-    pj_pool_block *b;
-
-    b = pool->block_list.next;
-    while (b != &pool->block_list) {
-	volatile unsigned char *p = b->buf;
-	while (p < b->end) *p++ = 0;
-	b = b->next;
-    }
-#endif
-
     if (pool->factory->release_pool)
 	(*pool->factory->release_pool)(pool->factory, pool);
 }
 
-
-PJ_IDEF(void) pj_pool_safe_release( pj_pool_t **ppool )
-{
-    pj_pool_t *pool = *ppool;
-    *ppool = NULL;
-    if (pool)
-	pj_pool_release(pool);
-}
-
-PJ_IDEF(void) pj_pool_secure_release( pj_pool_t **ppool )
-{
-    pj_pool_block *b;
-    pj_pool_t *pool = *ppool;
-    *ppool = NULL;
-
-    if (!pool)
-	return;
-
-    b = pool->block_list.next;
-    while (b != &pool->block_list) {
-	volatile unsigned char *p = b->buf;
-	while (p < b->end) *p++ = 0;
-	b = b->next;
-    }
-
-    pj_pool_release(pool);
-}

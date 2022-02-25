@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: stun_sock.h 4606 2013-10-01 05:00:57Z ming $ */
 /* 
  * Copyright (C) 2008-2011 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -371,7 +371,7 @@ PJ_DECL(pj_status_t) pj_stun_sock_create(pj_stun_config *stun_cfg,
  * timer will be started.
  *
  * @param stun_sock	The STUN transport instance.
- * @param domain	The domain, hostname, or IP address of the STUN
+ * @param domain	The domain, hostname, or IP address of the TURN
  *			server. When this parameter contains domain name,
  *			the \a resolver parameter must be set to activate
  *			DNS SRV resolution.
@@ -391,7 +391,7 @@ PJ_DECL(pj_status_t) pj_stun_sock_create(pj_stun_config *stun_cfg,
  *			queued, or the appropriate error code on failure.
  *			When this function returns PJ_SUCCESS, the final
  *			result of the allocation process will be notified
- *			to application in \a on_status() callback.
+ *			to application in \a on_state() callback.
  */
 PJ_DECL(pj_status_t) pj_stun_sock_start(pj_stun_sock *stun_sock,
 				        const pj_str_t *domain,

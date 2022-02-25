@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: evsub.h 4704 2014-01-16 05:30:46Z ming $ */
 /* 
  * Copyright (C) 2008-2011 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -246,8 +246,7 @@ PJ_DECL(pjsip_module*) pjsip_evsub_instance(void);
  *			registered.
  * @param event_name	Event package identification.
  * @param expires	Default subscription expiration time, in seconds.
- * @param accept_cnt	Number of strings in Accept array. The value must
- *			not be greater than PJSIP_GENERIC_ARRAY_MAX_COUNT.
+ * @param accept_cnt	Number of strings in Accept array.
  * @param accept	Array of Accept value.
  *
  * @return		PJ_SUCCESS on success.
@@ -363,15 +362,15 @@ PJ_DECL(const pj_str_t*) pjsip_evsub_get_termination_reason(pjsip_evsub *sub);
  *			SUBSCRIBE will be used.
  * @param expires	Subscription expiration. If the value is set to zero,
  *			this will request unsubscription. If the value is
- *			PJSIP_EXPIRES_NOT_SPECIFIED, default expiration
- * 			as defined by the package will be used.
+ *			negative, default expiration as defined by the package
+ *			will be used.
  * @param p_tdata	Pointer to receive the request.
  *
  * @return		PJ_SUCCESS on success.
  */
 PJ_DECL(pj_status_t) pjsip_evsub_initiate( pjsip_evsub *sub,
 					   const pjsip_method *method,
-					   pj_uint32_t expires,
+					   pj_int32_t expires,
 					   pjsip_tx_data **p_tdata);
 
 
@@ -490,38 +489,6 @@ PJ_DECL(void) pjsip_evsub_set_mod_data( pjsip_evsub *sub, unsigned mod_id,
  */
 PJ_DECL(void*) pjsip_evsub_get_mod_data( pjsip_evsub *sub, unsigned mod_id );
 
-
-/**
- * Increment the event subscription's group lock.
- *
- * @param sub		The server subscription instance.
- *
- * @return		PJ_SUCCESS on success.
- */
-PJ_DEF(pj_status_t) pjsip_evsub_add_ref(pjsip_evsub *sub);
-
-
-/**
- * Decrement the event subscription's group lock.
- *
- * @param sub		The server subscription instance.
- *
- * @return		PJ_SUCCESS on success.
- */
-PJ_DEF(pj_status_t) pjsip_evsub_dec_ref(pjsip_evsub *sub);
-
-
-/**
- * Sets, resets, or cancels the UAS subscription timeout.
- * If there is an existing timer, it is cancelled before any
- * other action. A timeout of 0 is ignored except that any
- * existing timer is cancelled.
- *
- * @param sub           The server subscription instance.
- * @param seconds       The new timeout.
- */
-PJ_DEF(void) pjsip_evsub_uas_set_timeout(pjsip_evsub *sub,
-					 pj_uint32_t seconds);
 
 
 PJ_END_DECL

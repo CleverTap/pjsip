@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: audiotest.h 3553 2011-05-05 06:14:19Z nanang $ */
 /* 
  * Copyright (C) 2008-2011 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -24,7 +24,7 @@
  * @file audiotest.h
  * @brief Audio test utility.
  */
-#include "../pjmedia-audiodev/audiodev.h"
+#include <pjmedia-audiodev/audiodev.h>
 
 
 PJ_BEGIN_DECL

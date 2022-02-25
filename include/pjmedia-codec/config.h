@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: config.h 4331 2013-01-23 06:18:18Z ming $ */
 /* 
  * Copyright (C) 2008-2011 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -51,54 +51,6 @@
 
 
 /**
- * Settings to enable L16 codec 8KHz, mono. By default it is disabled.
- */
-#ifndef PJMEDIA_CODEC_L16_HAS_8KHZ_MONO
-#   define PJMEDIA_CODEC_L16_HAS_8KHZ_MONO	0
-#endif
-
-
-/**
- * Settings to enable L16 codec 8KHz, stereo. By default it is disabled.
- */
-#ifndef PJMEDIA_CODEC_L16_HAS_8KHZ_STEREO
-#   define PJMEDIA_CODEC_L16_HAS_8KHZ_STEREO	0
-#endif
-
-
-/**
- * Settings to enable L16 codec 16KHz, mono. By default it is disabled.
- */
-#ifndef PJMEDIA_CODEC_L16_HAS_16KHZ_MONO
-#   define PJMEDIA_CODEC_L16_HAS_16KHZ_MONO	0
-#endif
-
-
-/**
- * Settings to enable L16 codec 16KHz, stereo. By default it is disabled.
- */
-#ifndef PJMEDIA_CODEC_L16_HAS_16KHZ_STEREO
-#   define PJMEDIA_CODEC_L16_HAS_16KHZ_STEREO	0
-#endif
-
-
-/**
- * Settings to enable L16 codec 48KHz, mono. By default it is disabled.
- */
-#ifndef PJMEDIA_CODEC_L16_HAS_48KHZ_MONO
-#   define PJMEDIA_CODEC_L16_HAS_48KHZ_MONO	0
-#endif
-
-
-/**
- * Settings to enable L16 codec 48KHz, stereo. By default it is disabled.
- */
-#ifndef PJMEDIA_CODEC_L16_HAS_48KHZ_STEREO
-#   define PJMEDIA_CODEC_L16_HAS_48KHZ_STEREO	0
-#endif
-
-
-/**
  * Unless specified otherwise, GSM codec is included by default.
  */
 #ifndef PJMEDIA_HAS_GSM_CODEC
@@ -144,19 +96,6 @@
 #   define PJMEDIA_HAS_G722_CODEC    1
 #endif
 
-/**
- * Initial memory block for G.722 codec implementation.
- */
-#ifndef PJMEDIA_POOL_LEN_G722_CODEC
-#   define PJMEDIA_POOL_LEN_G722_CODEC  1000
-#endif
-
-/**
- * Memory increment for G.722 codec implementation.
- */
-#ifndef PJMEDIA_POOL_INC_G722_CODEC
-#   define PJMEDIA_POOL_INC_G722_CODEC  1000
-#endif
 
 /**
  * Default G.722 codec encoder and decoder level adjustment. The G.722
@@ -481,73 +420,12 @@
 
 
 /**
- * Enable OPUS codec.
- *
- * Default: 0
- */
-#ifndef PJMEDIA_HAS_OPUS_CODEC
-#   define PJMEDIA_HAS_OPUS_CODEC			0
-#endif
-
-/**
- * OPUS codec sample rate.
- *
- * Default: 48000
- */
-#ifndef PJMEDIA_CODEC_OPUS_DEFAULT_SAMPLE_RATE
-#   define PJMEDIA_CODEC_OPUS_DEFAULT_SAMPLE_RATE  	48000
-#endif
-
-/**
- * OPUS codec default maximum average bit rate.
- *
- * Default: 0 (leave it to default value specified by Opus, which will
- * take into account factors such as media content (speech/music), sample
- * rate, channel count, etc).
- */
-#ifndef PJMEDIA_CODEC_OPUS_DEFAULT_BIT_RATE
-#   define PJMEDIA_CODEC_OPUS_DEFAULT_BIT_RATE  	0
-#endif
-
-
-/**
- * OPUS default encoding complexity, which is an integer from
- * 0 to 10, where 0 is the lowest complexity and 10 is the highest.
- *
- * Default: 5
- */
-#ifndef PJMEDIA_CODEC_OPUS_DEFAULT_COMPLEXITY
-#   define PJMEDIA_CODEC_OPUS_DEFAULT_COMPLEXITY 	5
-#endif
-
-
-/**
- * OPUS default CBR (constant bit rate) setting
- *
- * Default: PJ_FALSE (which means Opus will use VBR (variable bit rate))
- */
-#ifndef PJMEDIA_CODEC_OPUS_DEFAULT_CBR
-#   define PJMEDIA_CODEC_OPUS_DEFAULT_CBR 		PJ_FALSE
-#endif
-
-
-/**
- * Enable G.729 codec using BCG729 backend.
- *
- * Default: 0 
- */
-#ifndef PJMEDIA_HAS_BCG729
-#   define PJMEDIA_HAS_BCG729				0
-#endif
-
-
-/**
  * Specify if FFMPEG codecs are available.
  *
- * Default: PJMEDIA_HAS_LIBAVFORMAT
+ * Default: PJMEDIA_HAS_LIBAVCODEC
  */
 #ifndef PJMEDIA_HAS_FFMPEG_CODEC
-#   define PJMEDIA_HAS_FFMPEG_CODEC		PJMEDIA_HAS_LIBAVFORMAT
+#   define PJMEDIA_HAS_FFMPEG_CODEC		PJMEDIA_HAS_LIBAVCODEC
 #endif
 
 
@@ -572,144 +450,10 @@
 /**
  * Enable FFMPEG H264 codec (requires libx264).
  *
- * Default: disabled when OpenH264 is used, otherwise it is set to
- * PJMEDIA_HAS_FFMPEG_VID_CODEC
+ * Default: 0
  */
 #ifndef PJMEDIA_HAS_FFMPEG_CODEC_H264
-#   if defined(PJMEDIA_HAS_OPENH264_CODEC) && PJMEDIA_HAS_OPENH264_CODEC != 0
-#	define PJMEDIA_HAS_FFMPEG_CODEC_H264	0
-#   else
-#	define PJMEDIA_HAS_FFMPEG_CODEC_H264	PJMEDIA_HAS_FFMPEG_VID_CODEC
-#   endif
-#endif
-
-/**
- * Enable FFMPEG VPX codec (requires libvpx)
- */
-#ifndef PJMEDIA_HAS_FFMPEG_CODEC_VP8
-#   if defined(PJMEDIA_HAS_VPX_CODEC) && PJMEDIA_HAS_VPX_CODEC != 0
-#	define PJMEDIA_HAS_FFMPEG_CODEC_VP8		0
-#   else
-#	define PJMEDIA_HAS_FFMPEG_CODEC_VP8		1
-#   endif
-#endif
-
-#ifndef PJMEDIA_HAS_FFMPEG_CODEC_VP9
-#   if defined(PJMEDIA_HAS_VPX_CODEC) && PJMEDIA_HAS_VPX_CODEC != 0
-#	define PJMEDIA_HAS_FFMPEG_CODEC_VP9		0
-#   else
-#	define PJMEDIA_HAS_FFMPEG_CODEC_VP9		1
-#   endif
-#endif
-
-
-/**
- * Determine the log level of the native openH264 log which will be forwarded
- * to the library's log.
- * Set to WELS_LOG_QUIET to disable logging, or WELS_LOG_DETAIL for debugging.
- *
- * Default: WELS_LOG_ERROR.
- */
-#ifndef PJMEDIA_CODEC_OPENH264_LOG_LEVEL
-#   define PJMEDIA_CODEC_OPENH264_LOG_LEVEL  WELS_LOG_ERROR
-#endif
-
-/**
- * Enable VPX VP8 codec.
- *
- * Default: 1
- */
-#ifndef PJMEDIA_HAS_VPX_CODEC_VP8
-#   define PJMEDIA_HAS_VPX_CODEC_VP8		1
-#endif
-
-/**
- * Enable VPX VP9 codec.
- *
- * Default: 0 (disabled)
- */
-#ifndef PJMEDIA_HAS_VPX_CODEC_VP9
-#   define PJMEDIA_HAS_VPX_CODEC_VP9		0
-#endif
-
-/**
- * Enable Android MediaCodec AMRNB codec.
- *
- * Default: 1
- */
-#ifndef PJMEDIA_HAS_AND_MEDIA_AMRNB
-#   define PJMEDIA_HAS_AND_MEDIA_AMRNB		1
-#endif
-
-/**
- * Enable Android MediaCodec AMRWB codec.
- *
- * Default: 1
- */
-#ifndef PJMEDIA_HAS_AND_MEDIA_AMRWB
-#   define PJMEDIA_HAS_AND_MEDIA_AMRWB		1
-#endif
-
-/**
- * Enable Android MediaCodec AVC/H264 codec.
- *
- * Default: 1
- */
-#ifndef PJMEDIA_HAS_AND_MEDIA_H264
-#   define PJMEDIA_HAS_AND_MEDIA_H264		1
-#endif
-
-/**
- * Enable Android MediaCodec VP8 codec.
- *
- * Default: 1
- */
-#ifndef PJMEDIA_HAS_AND_MEDIA_VP8
-#   define PJMEDIA_HAS_AND_MEDIA_VP8		1
-#endif
-
-/**
- * Enable Android MediaCodec VP9 codec.
- *
- * Default: 1
- */
-#ifndef PJMEDIA_HAS_AND_MEDIA_VP9
-#   define PJMEDIA_HAS_AND_MEDIA_VP9		1
-#endif
-
-/**
- * Prioritize to use software video encoder on Android MediaCodec.
- * Set to 0 to prioritize Hardware encoder.
- * Note: based on test, software encoder configuration provided the most stable
- * configuration.
- *
- * Default: 1
- */
-#ifndef PJMEDIA_AND_MEDIA_PRIO_SW_VID_ENC
-#    define PJMEDIA_AND_MEDIA_PRIO_SW_VID_ENC 	1
-#endif
-
-/**
- * Prioritize to use software video encoder on Android MediaCodec.
- * Set to 0 to prioritize Hardware encoder.
- * Note: based on test, software decoder configuration provided the most stable
- * configuration.
- *
- * Default: 1
- */
-#ifndef PJMEDIA_AND_MEDIA_PRIO_SW_VID_DEC
-#    define PJMEDIA_AND_MEDIA_PRIO_SW_VID_DEC 	1
-#endif
-
-
-/**
- * Maximum interval between keyframes for Apple VideoToolbox codecs,
- * in second.
- *
- * Default: 5 (seconds)
- */
-#ifndef PJMEDIA_CODEC_VID_TOOLBOX_MAX_KEYFRAME_INTERVAL
-#   define PJMEDIA_CODEC_VID_TOOLBOX_MAX_KEYFRAME_INTERVAL	5
+#   define PJMEDIA_HAS_FFMPEG_CODEC_H264	PJMEDIA_HAS_FFMPEG_VID_CODEC
 #endif
 
 /**

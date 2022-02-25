@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: avi_dev.h 4016 2012-04-04 05:05:50Z bennylp $ */
 /*
  * Copyright (C) 2008-2011 Teluu Inc. (http://www.teluu.com)
  *
@@ -16,8 +16,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef __PJMEDIA_VIDEODEV_AVI_DEV_H__
-#define __PJMEDIA_VIDEODEV_AVI_DEV_H__
+#ifndef PJMEDIA_VIDEODEV_AVI_DEV_H__
+#define PJMEDIA_VIDEODEV_AVI_DEV_H__
 
 /**
  * @file avi_dev.h
@@ -113,7 +113,7 @@ PJ_DECL(pj_status_t) pjmedia_avi_dev_alloc(pjmedia_vid_dev_factory *f,
  * Retrieve the parameters set for the virtual device.
  *
  * @param id		Device ID.
- * @param param		Structure to receive the settings.
+ * @param prm		Structure to receive the settings.
  *
  * @return		PJ_SUCCESS or the appropriate error code.
  */
@@ -136,4 +136,4 @@ PJ_DECL(pj_status_t) pjmedia_avi_dev_free(pjmedia_vid_dev_index id);
 PJ_END_DECL
 
 
-#endif    /* __PJMEDIA_VIDEODEV_AVI_DEV_H__ */
+#endif    /* PJMEDIA_VIDEODEV_AVI_DEV_H__ */

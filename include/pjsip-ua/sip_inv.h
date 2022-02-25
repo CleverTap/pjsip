@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: sip_inv.h 4653 2013-11-19 10:18:17Z bennylp $ */
 /* 
  * Copyright (C) 2008-2011 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -97,17 +97,6 @@ typedef enum pjsip_inv_state
 } pjsip_inv_state;
 
 /**
- * Structure to hold parameters when calling the callback
- * #on_rx_offer2().
- */
-struct pjsip_inv_on_rx_offer_cb_param
-{
-    const pjmedia_sdp_session 	*offer;	    /** Remote offer.		    */
-    const pjsip_rx_data 	*rdata;	    /** The received request.       */
-};
-
-
-/**
  * This structure contains callbacks to be registered by application to 
  * receieve notifications from the framework about various events in
  * the invite session.
@@ -131,8 +120,7 @@ typedef struct pjsip_inv_callback
      * This callback is called when the invite usage module has created 
      * a new dialog and invite because of forked outgoing request.
      *
-     * Currently the invite session does not create a new dialog in
-     * forking scenario, so this callback will never be invoked.
+     * This callback is mandatory.
      *
      * @param inv	The new invite session.
      * @param e		The event which has caused the dialog to fork.
@@ -166,24 +154,11 @@ typedef struct pjsip_inv_callback
      * this SDP answer will be negotiated with the offer, and the result
      * will be sent with the SIP message.
      *
-     * Note: if callback #on_rx_offer2() is implemented, this callback will
-     * not be called.
-     *
      * @param inv	The invite session.
      * @param offer	Remote offer.
      */
     void (*on_rx_offer)(pjsip_inv_session *inv,
-                        const pjmedia_sdp_session *offer);
-
-    /**
-     * This callback is called when the invite session has received 
-     * new offer from peer. Variant of #on_rx_offer() callback.
-     *
-     * @param inv	The invite session.
-     * @param param	The callback parameters.
-     */
-    void (*on_rx_offer2)(pjsip_inv_session *inv,
-                         struct pjsip_inv_on_rx_offer_cb_param *param);
+			const pjmedia_sdp_session *offer);
 
     /**
      * This callback is optional, and is called when the invite session has
@@ -256,17 +231,13 @@ typedef struct pjsip_inv_callback
      * sending of the ACK request (for example, when it needs to 
      * wait for answer from the other call leg, in 3PCC scenarios). 
      *
-     * Application MUST create the ACK request using pjsip_inv_create_ack()
-     * and send it using pjsip_inv_send_msg().
+     * Application creates the ACK request
      *
      * Once it has sent the ACK request, the framework will keep 
      * this ACK request in the cache. Subsequent receipt of 2xx response
-     * will not cause this callback to be called (but see exception below),
-     * and instead automatic retransmission of this ACK request from
-     * the cache will be done by the framework.
-     * Exception: if app has created the ACK but has not sent it,
-     * while it receives a retransmission of 2xx response, this callback
-     * will be called again.
+     * will not cause this callback to be called, and instead automatic
+     * retransmission of this ACK request from the cache will be done
+     * by the framework.
      *
      * This callback is optional.
      */
@@ -377,17 +348,7 @@ enum pjsip_inv_option
      * Session timer extension will always be used even when peer doesn't
      * support/want session timer.
      */
-    PJSIP_INV_ALWAYS_USE_TIMER	= 128,
-
-    /**
-     * Indicate support for trickle ICE
-     */
-    PJSIP_INV_SUPPORT_TRICKLE_ICE = 256,
-
-    /**
-     * Require trickle ICE support.
-     */
-    PJSIP_INV_REQUIRE_TRICKLE_ICE = 512,
+    PJSIP_INV_ALWAYS_USE_TIMER	= 128
 
 };
 
@@ -422,11 +383,6 @@ struct pjsip_timer;
  * Other applications that want to use these pools must understand
  * that the flip-flop pool's lifetimes are synchronized to the
  * SDP offer-answer negotiation.
- *
- * The lifetime of this session is controlled by the reference counter in this
- * structure, which is manipulated by calling #pjsip_inv_add_ref and
- * #pjsip_inv_dec_ref. When the reference counter has reached zero, then
- * this session will be destroyed.
  */
 struct pjsip_inv_session
 {
@@ -454,11 +410,6 @@ struct pjsip_inv_session
     pj_int32_t		 last_ack_cseq;		    /**< CSeq of last ACK   */
     void		*mod_data[PJSIP_MAX_MODULE];/**< Modules data.	    */
     struct pjsip_timer	*timer;			    /**< Session Timers.    */
-    pj_bool_t		 following_fork;	    /**< Internal, following
-							 forked media?	    */
-    pj_atomic_t		*ref_cnt;		    /**< Reference counter. */
-    pj_bool_t            updated_sdp_answer;        /**< SDP answer just been
-							 updated?	    */
 };
 
 
@@ -525,7 +476,7 @@ PJ_DECL(void) pjsip_inv_usage_dump(void);
  *			it can specify the SDP here. Otherwise it can leave 
  *			this to NULL, to let remote UAS specifies an offer.
  * @param options	The options argument is bitmask combination of SIP 
- *			features in pjsip_inv_option enumeration.
+ *			features in pjsip_inv_options enumeration.
  * @param p_inv		On successful return, the invite session will be put 
  *			in this argument.
  *
@@ -662,7 +613,7 @@ PJ_DECL(pj_status_t) pjsip_inv_verify_request3( pjsip_rx_data *rdata,
  *			to rearrange the media lines in the answer so that it
  *			matches the offer. 
  * @param options	The options argument is bitmask combination of SIP 
- *			features in pjsip_inv_option enumeration.
+ *			features in pjsip_inv_options enumeration.
  * @param p_inv		Pointer to receive the newly created invite session.
  *
  * @return		On successful, the invite session will be put in 
@@ -675,30 +626,6 @@ PJ_DECL(pj_status_t) pjsip_inv_create_uas(pjsip_dialog *dlg,
 					  const pjmedia_sdp_session *local_sdp,
 					  unsigned options,
 					  pjsip_inv_session **p_inv);
-
-
-/**
- * Add reference counter to the INVITE session. The reference counter controls
- * the life time of the session, ie. when the counter reaches zero, then it 
- * will be destroyed.
- *
- * @param inv       The INVITE session.
- * @return          PJ_SUCCESS if the INVITE session reference counter
- *                  was increased.
- */
-PJ_DECL(pj_status_t) pjsip_inv_add_ref( pjsip_inv_session *inv );
-
-/**
- * Decrement reference counter of the INVITE session.
- * When the session is no longer used, it will be destroyed and
- * caller is informed with PJ_EGONE return status.
- *
- * @param inv       The INVITE session.
- * @return          PJ_SUCCESS if the INVITE session reference counter
- *                  was decreased. A status PJ_EGONE will be returned to 
- *                  inform that session is destroyed.
- */
-PJ_DECL(pj_status_t) pjsip_inv_dec_ref( pjsip_inv_session *inv );
 
 
 /**
@@ -977,7 +904,7 @@ PJ_DECL(pj_status_t) pjsip_inv_update (	pjsip_inv_session *inv,
  *
  * Note that if the invite session has a pending offer to be answered 
  * (for example when the last 2xx response to INVITE contains an offer), 
- * application MUST have set the SDP answer with #pjsip_inv_set_sdp_answer()
+ * application MUST have set the SDP answer with #pjsip_create_sdp_body()
  * prior to creating the ACK request. In this case, the ACK request
  * will be added with SDP message body.
  *
@@ -1071,25 +998,6 @@ PJ_DECL(pj_status_t) pjsip_create_sdp_body(pj_pool_t *pool,
  * @return		The SDP info.
  */
 PJ_DECL(pjsip_rdata_sdp_info*) pjsip_rdata_get_sdp_info(pjsip_rx_data *rdata);
-
-
-/**
- * Retrieve SDP information from an incoming message. Application should
- * prefer to use this function rather than parsing the SDP manually since
- * this function supports multipart message body.
- *
- * This function will only parse the SDP once, the first time it is called
- * on the same message. Subsequent call on the same message will just pick
- * up the already parsed SDP from the message.
- *
- * @param rdata		The incoming message.
- * @param med_type	The SDP media type.
- *
- * @return		The SDP info.
- */
-PJ_DECL(pjsip_rdata_sdp_info*) pjsip_rdata_get_sdp_info2(
-					    pjsip_rx_data *rdata,
-					    const pjsip_media_type *med_type);
 
 
 PJ_END_DECL

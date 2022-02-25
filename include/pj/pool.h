@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: pool.h 4537 2013-06-19 06:47:43Z riza $ */
 /* 
  * Copyright (C) 2008-2011 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -177,7 +177,10 @@ PJ_BEGIN_DECL
 
    static void my_perror(const char *title, pj_status_t status)
    {
-	PJ_PERROR(1,(THIS_FILE, status, title));
+        char errmsg[PJ_ERR_MSG_SIZE];
+
+	pj_strerror(status, errmsg, sizeof(errmsg));
+	PJ_LOG(1,(THIS_FILE, "%s: %s [status=%d]", title, errmsg, status));
    }
 
    static void pool_demo_1(pj_pool_factory *pfactory)
@@ -386,24 +389,6 @@ PJ_IDECL(pj_pool_t*) pj_pool_create(pj_pool_factory *factory,
  * @param pool	    Memory pool.
  */
 PJ_IDECL(void) pj_pool_release( pj_pool_t *pool );
-
-
-/**
- * Release the pool back to pool factory and set the pool pointer to zero.
- *
- * @param ppool	    Pointer to memory pool.
- */
-PJ_IDECL(void) pj_pool_safe_release( pj_pool_t **ppool );
-
-
-/**
- * Release the pool back to pool factory and set the pool pointer to zero.
- * The memory pool content will be wiped out first before released.
- *
- * @param ppool	    Pointer to memory pool.
- */
-PJ_IDECL(void) pj_pool_secure_release( pj_pool_t **ppool );
-
 
 /**
  * Get pool object name.

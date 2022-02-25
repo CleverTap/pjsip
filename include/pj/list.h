@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: list.h 4624 2013-10-21 06:37:30Z ming $ */
 /* 
  * Copyright (C) 2008-2011 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -111,6 +111,7 @@ PJ_INLINE(int) pj_list_empty(const pj_list_type * node)
  * @param pos	The element to which the node will be inserted before. 
  * @param node	The element to be inserted.
  *
+ * @return void.
  */
 PJ_IDECL(void)	pj_list_insert_before(pj_list_type *pos, pj_list_type *node);
 
@@ -144,6 +145,7 @@ PJ_IDECL(void) pj_list_insert_nodes_before(pj_list_type *lst,
  *		    element.
  * @param node	    The element to be inserted after the position element.
  *
+ * @return void.
  */
 PJ_IDECL(void) pj_list_insert_after(pj_list_type *pos, pj_list_type *node);
 
@@ -183,6 +185,7 @@ PJ_IDECL(void) pj_list_insert_nodes_after(pj_list_type *lst,
  * @param list1	The destination list.
  * @param list2	The source list.
  *
+ * @return void.
  */
 PJ_IDECL(void) pj_list_merge_first(pj_list_type *list1, pj_list_type *list2);
 
@@ -200,6 +203,7 @@ PJ_IDECL(void) pj_list_merge_first(pj_list_type *list1, pj_list_type *list2);
  *		    element.
  * @param list2	    The element in the list to be inserted.
  *
+ * @return void.
  */
 PJ_IDECL(void) pj_list_merge_last( pj_list_type *list1, pj_list_type *list2);
 

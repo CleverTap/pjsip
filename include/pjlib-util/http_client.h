@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: http_client.h 3841 2011-10-24 09:28:13Z ming $ */
 /* 
  * Copyright (C) 2008-2011 Teluu Inc. (http://www.teluu.com)
  *
@@ -357,7 +357,7 @@ PJ_DECL(void) pj_http_req_param_default(pj_http_req_param *param);
  *
  * @param headers	The headers.
  * @param name	        The header field name.
- * @param val	        The header field value.
+ * @param value	        The header field value.
  *
  * @return	        PJ_SUCCESS if the operation has been successful,
  *		        or the appropriate error code on failure.
@@ -373,7 +373,7 @@ PJ_DECL(pj_status_t) pj_http_headers_add_elmt(pj_http_headers *headers,
  *
  * @param headers	The headers.
  * @param name	        The header field name.
- * @param val	        The header field value.
+ * @param value	        The header field value.
  *
  * @return	        PJ_SUCCESS if the operation has been successful,
  *		        or the appropriate error code on failure.

@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: sip_auth_parser.h 3553 2011-05-05 06:14:19Z nanang $ */
 /* 
  * Copyright (C) 2008-2011 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -25,7 +25,7 @@
  * @brief SIP Authorization Parser Module.
  */
 
-#include "../pj/types.h"
+#include <pj/types.h>
 
 PJ_BEGIN_DECL
 
@@ -64,7 +64,6 @@ extern const pj_str_t	pjsip_USERNAME_STR, /**< "username" string const.   */
 			pjsip_FALSE_STR,    /**< "false" string const.	    */
 			pjsip_DIGEST_STR,   /**< "digest" string const.	    */
 			pjsip_PGP_STR,	    /**< "pgp" string const.	    */
-			pjsip_BEARER_STR,   /**< "bearer" string const.     */
 			pjsip_MD5_STR,	    /**< "md5" string const.	    */
 			pjsip_AUTH_STR;	    /**< "auth" string const.	    */
 

@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: pjmedia_audiodev.h 3553 2011-05-05 06:14:19Z nanang $ */
 /* 
  * Copyright (C) 2008-2011 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -25,9 +25,9 @@
  * @brief PJMEDIA main header file.
  */
 
-#include "pjmedia-audiodev/audiodev.h"
-#include "pjmedia-audiodev/audiodev_imp.h"
-#include "pjmedia-audiodev/audiotest.h"
+#include <pjmedia-audiodev/audiodev.h>
+#include <pjmedia-audiodev/audiodev_imp.h>
+#include <pjmedia-audiodev/audiotest.h>
 
 #endif	/* __PJMEDIA_AUDIODEV_H__ */
 

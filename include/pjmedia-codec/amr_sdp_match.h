@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: amr_sdp_match.h 3911 2011-12-15 06:45:23Z nanang $ */
 /* 
  * Copyright (C) 2008-2011 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -26,7 +26,7 @@
  * @brief Special SDP format match for AMR-NB and AMR-WB.
  */
 
-#include "../pjmedia/sdp_neg.h"
+#include <pjmedia/sdp_neg.h>
 
 PJ_BEGIN_DECL
 

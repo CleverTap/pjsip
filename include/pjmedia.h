@@ -1,7 +1,7 @@
-/* $Id$ */
+/* $Id: pjmedia.h 3664 2011-07-19 03:42:28Z nanang $ */
 /* 
  * Copyright (C) 2008-2011 Teluu Inc. (http://www.teluu.com)
- * Copyright (C) 2003-2008 Benny Prijono "benny@prijono.org"
+ * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -68,11 +68,10 @@
 #include "pjmedia/transport_loop.h"
 #include "pjmedia/transport_srtp.h"
 #include "pjmedia/transport_udp.h"
-#include "pjmedia/vid_codec.h"
-#include "pjmedia/vid_conf.h"
 #include "pjmedia/vid_port.h"
+#include "pjmedia/vid_codec.h"
 #include "pjmedia/vid_stream.h"
-//#include "pjmedia/vid_tee.h"
+#include "pjmedia/vid_tee.h"
 #include "pjmedia/wav_playlist.h"
 #include "pjmedia/wav_port.h"
 #include "pjmedia/wave.h"

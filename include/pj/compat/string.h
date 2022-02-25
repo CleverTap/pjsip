@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: string.h 3553 2011-05-05 06:14:19Z nanang $ */
 /* 
  * Copyright (C) 2008-2011 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -46,13 +46,8 @@
 #if defined(_MSC_VER)
 #   define strcasecmp	_stricmp
 #   define strncasecmp	_strnicmp
-
-/* snprintf() and vsnprintf() are available since Visual Studio 2015 */
-#if _MSC_VER < 1900
 #   define snprintf	_snprintf
 #   define vsnprintf	_vsnprintf
-#endif
-
 #   define snwprintf	_snwprintf
 #   define wcsicmp	_wcsicmp
 #   define wcsnicmp	_wcsnicmp

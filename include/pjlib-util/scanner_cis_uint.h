@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: scanner_cis_uint.h 3553 2011-05-05 06:14:19Z nanang $ */
 /* 
  * Copyright (C) 2008-2011 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -20,7 +20,7 @@
 #ifndef __PJLIB_UTIL_SCANNER_CIS_BIT_H__
 #define __PJLIB_UTIL_SCANNER_CIS_BIT_H__
 
-#include "../pj/types.h"
+#include <pj/types.h>
 
 PJ_BEGIN_DECL
 

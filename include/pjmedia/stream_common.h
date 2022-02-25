@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: stream_common.h 3664 2011-07-19 03:42:28Z nanang $ */
 /* 
  * Copyright (C) 2011 Teluu Inc. (http://www.teluu.com)
  *
@@ -27,76 +27,9 @@
 
 #include "../pjmedia/codec.h"
 #include "../pjmedia/sdp.h"
-#include "../pjmedia/rtp.h"
-#include "../pjmedia/rtcp.h"
 
 
 PJ_BEGIN_DECL
-
-/**
- * This structure describes rtp/rtcp session information of the media stream.
- */
-typedef struct pjmedia_stream_rtp_sess_info
-{
-    /**
-     * The decode RTP session.
-     */
-    const pjmedia_rtp_session *rx_rtp;
-
-    /**
-     * The encode RTP session.
-     */
-    const pjmedia_rtp_session *tx_rtp;
-
-    /**
-     * The decode RTCP session.
-     */
-    const pjmedia_rtcp_session *rtcp;
-
-} pjmedia_stream_rtp_sess_info;
-
-#if defined(PJMEDIA_STREAM_ENABLE_KA) && PJMEDIA_STREAM_ENABLE_KA!=0
-
-/**
- * Structure of configuration settings for stream keepalive.
- */
-typedef struct pjmedia_stream_ka_config
-{
-    /**
-     * The number of keepalive to be sent after the stream is created.
-     * When this is set to 0, keepalive will be sent once for NAT hole
-     * punching if stream's #use_ka is enabled.
-     *
-     * Default: PJMEDIA_STREAM_START_KA_CNT
-     */
-    unsigned			    start_count;
-
-    /**
-     * The keepalive sending interval after the stream is created.
-     *
-     * Default: PJMEDIA_STREAM_START_KA_INTERVAL_MSEC
-     */
-    unsigned			    start_interval;
-
-    /**
-     * The keepalive sending interval, after #start_count number keepalive 
-     * was sent.
-     * 
-     * Default: PJMEDIA_STREAM_KA_INTERVAL (seconds)
-     */
-    unsigned			    ka_interval;
-
-} pjmedia_stream_ka_config;
-
-/**
- * Initialize the stream send keep-alive with default settings.
- *
- * @param cfg		Stream send keep-alive structure to be initialized.
- */
-PJ_DECL(void)
-pjmedia_stream_ka_config_default(pjmedia_stream_ka_config *cfg);
-
-#endif
 
 /**
  * This is internal function for parsing SDP format parameter of specific

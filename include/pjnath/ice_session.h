@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: ice_session.h 4602 2013-09-25 04:57:26Z nanang $ */
 /* 
  * Copyright (C) 2008-2011 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -170,8 +170,6 @@ typedef struct pj_ice_sess pj_ice_sess;
 /** Forward declaration for pj_ice_sess_check */
 typedef struct pj_ice_sess_check pj_ice_sess_check;
 
-/** Forward declaration for pj_ice_sess_cand */
-typedef struct pj_ice_sess_cand pj_ice_sess_cand;
 
 /**
  * This structure describes ICE component. 
@@ -223,8 +221,6 @@ typedef struct pj_ice_msg_data
 	    pj_ice_sess		    *ice;   /**< ICE session	*/
 	    pj_ice_sess_checklist   *clist; /**< Checklist	*/
 	    unsigned		     ckid;  /**< Check ID	*/
-	    pj_ice_sess_cand	    *lcand; /**< Local cand	*/
-	    pj_ice_sess_cand	    *rcand; /**< Remote cand	*/
 	} req;
     } data;
 
@@ -239,13 +235,8 @@ typedef struct pj_ice_msg_data
  * (server reflexive, relayed or host), priority, foundation, and
  * base.
  */
-struct pj_ice_sess_cand
+typedef struct pj_ice_sess_cand
 {
-    /**
-     * The candidate ID.
-     */
-    unsigned		 id;
-
     /**
      * The candidate type, as described in #pj_ice_cand_type enumeration.
      */
@@ -318,7 +309,7 @@ struct pj_ice_sess_cand
      */
     pj_sockaddr		 rel_addr;
 
-};
+} pj_ice_sess_cand;
 
 
 /**
@@ -382,11 +373,6 @@ struct pj_ice_sess_check
      * Pointer to remote candidate entry of this check.
      */
     pj_ice_sess_cand	*rcand;
-
-    /**
-     * Foundation index, referring to foundation array defined in checklist.
-     */
-    int			 foundation_idx;
 
     /**
      * Check priority.
@@ -467,16 +453,6 @@ struct pj_ice_sess_checklist
     pj_ice_sess_check	     checks[PJ_ICE_MAX_CHECKS];
 
     /**
-     * Number of foundations.
-     */
-    unsigned		     foundation_cnt;
-
-    /**
-     * Array of foundations, check foundation index refers to this array.
-     */
-    pj_str_t		     foundation[PJ_ICE_MAX_CHECKS * 2];
-
-    /**
      * A timer used to perform periodic check for this checklist.
      */
     pj_timer_entry	     timer;
@@ -490,14 +466,6 @@ struct pj_ice_sess_checklist
  */
 typedef struct pj_ice_sess_cb
 {
-    /**
-     * An optional callback that will be called by the ICE session when
-     * a valid pair has been found during ICE negotiation.
-     *
-     * @param ice           The ICE session.
-     */
-    void	(*on_valid_pair)(pj_ice_sess *ice);
-
     /**
      * An optional callback that will be called by the ICE session when
      * ICE negotiation has completed, successfully or with failure.
@@ -597,39 +565,6 @@ typedef struct pj_ice_rx_check
 
 
 /**
- * This enumeration describes the modes of trickle ICE.
- */
-typedef enum pj_ice_sess_trickle
-{
-    /**
-     * Trickle ICE is disabled.
-     */
-    PJ_ICE_SESS_TRICKLE_DISABLED,
-
-    /**
-     * Half trickle ICE. This mode has better interoperability when remote
-     * capability of ICE trickle is unknown at ICE initialization.
-     *
-     * As ICE initiator, it will convey all local ICE candidates to remote
-     * (just like regular ICE) and be ready to receive either response,
-     * trickle or regular ICE. As ICE answerer, it will do trickle ICE if
-     * it receives an offer with trickle ICE indication, otherwise it will do
-     * regular ICE.
-     */
-    PJ_ICE_SESS_TRICKLE_HALF,
-
-    /**
-     * Full trickle ICE. Only use this mode if it is known that that remote
-     * supports trickle ICE. The discovery whether remote supports trickle
-     * ICE should be done prior to ICE initialization and done by application
-     * (ICE does not provide the discovery mechanism).
-     */
-    PJ_ICE_SESS_TRICKLE_FULL
-
-} pj_ice_sess_trickle;
-
-
-/**
  * This structure describes various ICE session options. Application
  * configure the ICE session with these options by calling 
  * #pj_ice_sess_set_options().
@@ -637,8 +572,7 @@ typedef enum pj_ice_sess_trickle
 typedef struct pj_ice_sess_options
 {
     /**
-     * Specify whether to use aggressive nomination. This setting can only
-     * be enabled when trickle ICE is disabled.
+     * Specify whether to use aggressive nomination.
      */
     pj_bool_t		aggressive;
 
@@ -664,14 +598,6 @@ typedef struct pj_ice_sess_options
      * this timer.
      */
     int			controlled_agent_want_nom_timeout;
-
-    /**
-     * Trickle ICE mode. Note that, when enabled, aggressive nomination will
-     * be automatically disabled.
-     *
-     * Default value is PJ_ICE_SESS_TRICKLE_DISABLED.
-     */
-    pj_ice_sess_trickle	trickle;
 
 } pj_ice_sess_options;
 
@@ -699,12 +625,8 @@ struct pj_ice_sess
     pj_bool_t		 is_nominating;		    /**< Nominating stage   */
     pj_bool_t		 is_complete;		    /**< Complete?	    */
     pj_bool_t		 is_destroying;		    /**< Destroy is called  */
-    pj_bool_t            valid_pair_found;          /**< First pair found   */
-    pj_bool_t		 is_trickling;		    /**< End-of-candidates ind
-							 sent/received?	    */
     pj_status_t		 ice_status;		    /**< Error status.	    */
     pj_timer_entry	 timer;			    /**< ICE timer.	    */
-    pj_timer_entry	 timer_end_of_cand;	    /**< End-of-cand timer. */
     pj_ice_sess_cb	 cb;			    /**< Callback.	    */
 
     pj_stun_config	 stun_cfg;		    /**< STUN settings.	    */
@@ -725,17 +647,13 @@ struct pj_ice_sess
     /* Local candidates */
     unsigned		 lcand_cnt;		    /**< # of local cand.   */
     pj_ice_sess_cand	 lcand[PJ_ICE_MAX_CAND];    /**< Array of cand.	    */
-    unsigned		 lcand_paired;		    /**< # of local cand
-							 paired (trickling) */
 
     /* Remote candidates */
     unsigned		 rcand_cnt;		    /**< # of remote cand.  */
     pj_ice_sess_cand	 rcand[PJ_ICE_MAX_CAND];    /**< Array of cand.	    */
-    unsigned		 rcand_paired;		    /**< # of remote cand
-							 paired (trickling) */
 
     /** Array of transport datas */
-    pj_ice_msg_data	 tp_data[PJ_ICE_MAX_STUN + PJ_ICE_MAX_TURN];
+    pj_ice_msg_data	 tp_data[4];
 
     /* List of eearly checks */
     pj_ice_rx_check	 early_check;		    /**< Early checks.	    */
@@ -860,27 +778,6 @@ PJ_DECL(pj_status_t) pj_ice_sess_get_options(pj_ice_sess *ice,
  */
 PJ_DECL(pj_status_t) pj_ice_sess_set_options(pj_ice_sess *ice,
 					     const pj_ice_sess_options *opt);
-
-
-/**
- * Detach ICE session from group lock. This will delete ICE session group lock
- * handler.
- *
- * This function is useful when application creates an ICE session with
- * group lock and later it needs to recreate ICE session (e.g: for ICE
- * restart) so the previous ICE session resources can be released manually
- * (by calling the group lock handler) without waiting for the group lock
- * destroy to avoid memory bloat.
- *
- * @param ice		ICE session instance.
- * @param handler	Pointer to receive the group lock handler of
- *			this ICE session.
- *
- * @return		PJ_SUCCESS on success.
- */
-PJ_DECL(pj_status_t) pj_ice_sess_detach_grp_lock(pj_ice_sess *ice,
-						 pj_grp_lock_handler *handler);
-
 
 /**
  * Destroy ICE session. This will cancel any connectivity checks currently
@@ -1010,41 +907,6 @@ pj_ice_sess_create_check_list(pj_ice_sess *ice,
 			      unsigned rem_cand_cnt,
 			      const pj_ice_sess_cand rem_cand[]);
 
-
-/**
- * Update check list after receiving new remote ICE candidates or after
- * new local ICE candidates are found and conveyed to remote. This function
- * can also be called to indicate that trickling has completed, i.e:
- * local candidates gathering completed and remote has sent end-of-candidate
- * indication.
- *
- * This function is only applicable when trickle ICE is not disabled.
- *
- * @param ice		ICE session instance.
- * @param rem_ufrag	Remote ufrag, as seen in the SDP received from 
- *			the remote agent.
- * @param rem_passwd	Remote password, as seen in the SDP received from
- *			the remote agent.
- * @param rem_cand_cnt	Number of remote candidates.
- * @param rem_cand	Remote candidate array. Remote candidates are
- *			gathered from the SDP received from the remote 
- *			agent.
- * @param trickle_done	Flag to indicate end of trickling, set to PJ_TRUE
- *			after all local candidates have been gathered AND
- *			after receiving end-of-candidate indication from
- *			remote.
- *
- * @return		PJ_SUCCESS or the appropriate error code.
- */
-PJ_DECL(pj_status_t) 
-pj_ice_sess_update_check_list(pj_ice_sess *ice,
-			      const pj_str_t *rem_ufrag,
-			      const pj_str_t *rem_passwd,
-			      unsigned rem_cand_cnt,
-			      const pj_ice_sess_cand rem_cand[],
-			      pj_bool_t trickle_done);
-
-
 /**
  * Start ICE periodic check. This function will return immediately, and
  * application will be notified about the connectivity check status in
@@ -1072,10 +934,7 @@ PJ_DECL(pj_status_t) pj_ice_sess_start_check(pj_ice_sess *ice);
  * @param data		The data or packet to be sent.
  * @param data_len	Size of data or packet, in bytes.
  *
- * @return		If the callback \a on_tx_pkt() is called, this
- *			will contain the return value of the callback.
- *			Otherwise, it will indicate failure with
- * 			the appropriate error code.
+ * @return		PJ_SUCCESS if data is sent successfully.
  */
 PJ_DECL(pj_status_t) pj_ice_sess_send_data(pj_ice_sess *ice,
 					   unsigned comp_id,

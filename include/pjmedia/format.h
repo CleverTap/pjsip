@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: format.h 4785 2014-03-10 09:01:18Z nanang $ */
 /*
  * Copyright (C) 2008-2011 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -177,22 +177,6 @@ typedef enum pjmedia_format_id
     PJMEDIA_FORMAT_YV12	    = PJMEDIA_FORMAT_PACK('Y', 'V', '1', '2'),
 
     /**
-     * This is planar 4:2:0/12bpp YUV format, the data can be treated as
-     * two planes of color components, where the first plane contains
-     * only the Y samples, the second plane contains interleaved
-     * U (Cb) - V (Cr) samples.
-     */
-    PJMEDIA_FORMAT_NV12	    = PJMEDIA_FORMAT_PACK('N', 'V', '1', '2'),
-    
-    /**
-     * This is planar 4:2:0/12bpp YUV format, the data can be treated as
-     * two planes of color components, where the first plane contains
-     * only the Y samples, the second plane contains interleaved
-     * V (Cr) - U (Cb) samples.
-     */
-    PJMEDIA_FORMAT_NV21	    = PJMEDIA_FORMAT_PACK('N', 'V', '2', '1'),
-    
-    /**
      * This is planar 4:2:2/16bpp YUV format, the data can be treated as
      * three planes of color components, where the first plane contains
      * only the Y samples, the second plane contains only the U (Cb) samples,
@@ -219,15 +203,10 @@ typedef enum pjmedia_format_id
     PJMEDIA_FORMAT_H263P    = PJMEDIA_FORMAT_PACK('P', '2', '6', '3'),
     PJMEDIA_FORMAT_H264     = PJMEDIA_FORMAT_PACK('H', '2', '6', '4'),
 
-    PJMEDIA_FORMAT_VP8      = PJMEDIA_FORMAT_PACK('V', 'P', '8', '0'),
-    PJMEDIA_FORMAT_VP9      = PJMEDIA_FORMAT_PACK('V', 'P', '9', '0'),
-
     PJMEDIA_FORMAT_MJPEG    = PJMEDIA_FORMAT_PACK('M', 'J', 'P', 'G'),
     PJMEDIA_FORMAT_MPEG1VIDEO = PJMEDIA_FORMAT_PACK('M', 'P', '1', 'V'),
     PJMEDIA_FORMAT_MPEG2VIDEO = PJMEDIA_FORMAT_PACK('M', 'P', '2', 'V'),
     PJMEDIA_FORMAT_MPEG4    = PJMEDIA_FORMAT_PACK('M', 'P', 'G', '4'),
-
-    PJMEDIA_FORMAT_INVALID  = 0xFFFFFFFF
 
 } pjmedia_format_id;
 
@@ -641,6 +620,8 @@ PJ_INLINE(void) pjmedia_format_init_audio(pjmedia_format *fmt,
  * @param height	Image heigth.
  * @param fps_num	FPS numerator.
  * @param fps_denum	FPS denumerator.
+ * @param avg_bps	Average bitrate.
+ * @param max_bps	Maximum bitrate.
  */
 PJ_DECL(void) pjmedia_format_init_video(pjmedia_format *fmt,
 					pj_uint32_t fmt_id,
@@ -792,25 +773,6 @@ pjmedia_register_video_format_info(pjmedia_video_format_mgr *mgr,
  * 			calling this function).
  */
 PJ_DECL(void) pjmedia_video_format_mgr_destroy(pjmedia_video_format_mgr *mgr);
-
-
-/*****************************************************************************
- * FORMAT FUNCTION HELPER:
- */
-
-/**
- * Fill video frame buffer with black color.
- *
- * @param fmt		The video format.
- * @param buf		The frame buffer.
- * @param buf_size	The frame buffer size.
- *
- * @return		PJ_SUCCESS if successfull.
- */
-PJ_DECL(pj_status_t) pjmedia_video_format_fill_black(const pjmedia_format *fmt,
-						     void *buf,
-						     pj_size_t buf_size);
-
 
 PJ_END_DECL
 

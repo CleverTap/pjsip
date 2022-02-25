@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: string_i.h 4537 2013-06-19 06:47:43Z riza $ */
 /* 
  * Copyright (C) 2008-2011 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -18,8 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
  */
 
-#include "../pj/assert.h"
-#include "../pj/pool.h"
+#include <pj/pool.h>
 
 PJ_IDEF(pj_str_t) pj_str(char *str)
 {
@@ -33,17 +32,15 @@ PJ_IDEF(pj_str_t*) pj_strdup(pj_pool_t *pool,
 			      pj_str_t *dst,
 			      const pj_str_t *src)
 {
-    pj_assert(src->slen >= 0);
-
     /* Without this, destination will be corrupted */
     if (dst == src)
 	return dst;
 
-    if (src->slen > 0) {
+    if (src->slen) {
 	dst->ptr = (char*)pj_pool_alloc(pool, src->slen);
 	pj_memcpy(dst->ptr, src->ptr, src->slen);
     }
-    dst->slen = (src->slen < 0)? 0: src->slen;
+    dst->slen = src->slen;
     return dst;
 }
 
@@ -51,19 +48,11 @@ PJ_IDEF(pj_str_t*) pj_strdup_with_null( pj_pool_t *pool,
 					pj_str_t *dst,
 					const pj_str_t *src)
 {
-    pj_size_t src_slen = src->slen;
-
-    pj_assert(src->slen >= 0);
-
-    /* Check if the source's length is invalid */
-    if (src_slen < 0)
-    	src_slen = 0;
-
-    dst->ptr = (char*)pj_pool_alloc(pool, src_slen+1);
-    if (src_slen) {
-	pj_memcpy(dst->ptr, src->ptr, src_slen);
+    dst->ptr = (char*)pj_pool_alloc(pool, src->slen+1);
+    if (src->slen) {
+	pj_memcpy(dst->ptr, src->ptr, src->slen);
     }
-    dst->slen = src_slen;
+    dst->slen = src->slen;
     dst->ptr[dst->slen] = '\0';
     return dst;
 }
@@ -111,9 +100,7 @@ PJ_IDEF(pj_str_t*) pj_strassign( pj_str_t *dst, pj_str_t *src )
 
 PJ_IDEF(pj_str_t*) pj_strcpy(pj_str_t *dst, const pj_str_t *src)
 {
-    pj_assert(src->slen >= 0);
-
-    dst->slen = (src->slen < 0)? 0: src->slen;
+    dst->slen = src->slen;
     if (src->slen > 0)
 	pj_memcpy(dst->ptr, src->ptr, src->slen);
     return dst;
@@ -130,29 +117,21 @@ PJ_IDEF(pj_str_t*) pj_strcpy2(pj_str_t *dst, const char *src)
 PJ_IDEF(pj_str_t*) pj_strncpy( pj_str_t *dst, const pj_str_t *src, 
 			       pj_ssize_t max)
 {
-    pj_assert(src->slen >= 0);
-    pj_assert(max >= 0);
-
     if (max > src->slen) max = src->slen;
-    if (max > 0)
-	pj_memcpy(dst->ptr, src->ptr, max);
-    dst->slen = (max < 0)? 0: max;
+    pj_memcpy(dst->ptr, src->ptr, max);
+    dst->slen = max;
     return dst;
 }
 
 PJ_IDEF(pj_str_t*) pj_strncpy_with_null( pj_str_t *dst, const pj_str_t *src,
 					 pj_ssize_t max)
 {
-    pj_assert(src->slen >= 0);
-    pj_assert(max > 0);
-
     if (max <= src->slen)
-	max = (max > 0)? max-1: 0;
+	max = max-1;
     else
-	max = (src->slen < 0)? 0: src->slen;
+	max = src->slen;
 
-    if (max > 0)
-    	pj_memcpy(dst->ptr, src->ptr, max);
+    pj_memcpy(dst->ptr, src->ptr, max);
     dst->ptr[max] = '\0';
     dst->slen = max;
     return dst;
@@ -161,12 +140,9 @@ PJ_IDEF(pj_str_t*) pj_strncpy_with_null( pj_str_t *dst, const pj_str_t *src,
 
 PJ_IDEF(int) pj_strcmp( const pj_str_t *str1, const pj_str_t *str2)
 {
-    pj_assert(str1->slen >= 0);
-    pj_assert(str2->slen >= 0);
-
-    if (str1->slen <= 0) {
-	return str2->slen<=0 ? 0 : -1;
-    } else if (str2->slen <= 0) {
+    if (str1->slen == 0) {
+	return str2->slen==0 ? 0 : -1;
+    } else if (str2->slen == 0) {
 	return 1;
     } else {
 	pj_size_t min = (str1->slen < str2->slen)? str1->slen : str2->slen;
@@ -185,16 +161,13 @@ PJ_IDEF(int) pj_strncmp( const pj_str_t *str1, const pj_str_t *str2,
 {
     pj_str_t copy1, copy2;
 
-    pj_assert(str1->slen >= 0);
-    pj_assert(str2->slen >= 0);
-
-    if (len < (unsigned)str1->slen && str1->slen > 0) {
+    if (len < (unsigned)str1->slen) {
 	copy1.ptr = str1->ptr;
 	copy1.slen = len;
 	str1 = &copy1;
     }
 
-    if (len < (unsigned)str2->slen && str2->slen > 0) {
+    if (len < (unsigned)str2->slen) {
 	copy2.ptr = str2->ptr;
 	copy2.slen = len;
 	str2 = &copy2;
@@ -235,12 +208,9 @@ PJ_IDEF(int) pj_strcmp2( const pj_str_t *str1, const char *str2 )
 
 PJ_IDEF(int) pj_stricmp( const pj_str_t *str1, const pj_str_t *str2)
 {
-    pj_assert(str1->slen >= 0);
-    pj_assert(str2->slen >= 0);
-
-    if (str1->slen <= 0) {
-	return str2->slen<=0 ? 0 : -1;
-    } else if (str2->slen <= 0) {
+    if (str1->slen == 0) {
+	return str2->slen==0 ? 0 : -1;
+    } else if (str2->slen == 0) {
 	return 1;
     } else {
 	pj_size_t min = (str1->slen < str2->slen)? str1->slen : str2->slen;
@@ -345,13 +315,13 @@ PJ_IDEF(int) pj_strnicmp( const pj_str_t *str1, const pj_str_t *str2,
 {
     pj_str_t copy1, copy2;
 
-    if (len < (unsigned)str1->slen && str1->slen > 0) {
+    if (len < (unsigned)str1->slen) {
 	copy1.ptr = str1->ptr;
 	copy1.slen = len;
 	str1 = &copy1;
     }
 
-    if (len < (unsigned)str2->slen && str2->slen > 0) {
+    if (len < (unsigned)str2->slen) {
 	copy2.ptr = str2->ptr;
 	copy2.slen = len;
 	str2 = &copy2;
@@ -377,10 +347,7 @@ PJ_IDEF(int) pj_strnicmp2( const pj_str_t *str1, const char *str2,
 
 PJ_IDEF(void) pj_strcat(pj_str_t *dst, const pj_str_t *src)
 {
-    pj_assert(src->slen >= 0);
-    pj_assert(dst->slen >= 0);
-
-    if (src->slen > 0 && dst->slen >= 0) {
+    if (src->slen) {
 	pj_memcpy(dst->ptr + dst->slen, src->ptr, src->slen);
 	dst->slen += src->slen;
     }
@@ -389,10 +356,7 @@ PJ_IDEF(void) pj_strcat(pj_str_t *dst, const pj_str_t *src)
 PJ_IDEF(void) pj_strcat2(pj_str_t *dst, const char *str)
 {
     pj_size_t len = str? pj_ansi_strlen(str) : 0;
-
-    pj_assert(dst->slen >= 0);
-
-    if (len && dst->slen >= 0) {
+    if (len) {
 	pj_memcpy(dst->ptr + dst->slen, str, len);
 	dst->slen += len;
     }

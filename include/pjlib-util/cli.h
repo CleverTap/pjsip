@@ -289,7 +289,7 @@ typedef void (*pj_cli_get_dyn_choice) (pj_cli_dyn_choice_param *param);
  * This specifies the callback type for command handlers, which will be
  * executed when the specified command is invoked.
  *
- * @param cval   The command that is specified by the user.
+ * @param cmd_val   The command that is specified by the user.
  *
  * @return          Return the status of the command execution.
  */
@@ -390,7 +390,7 @@ PJ_DECL(void) pj_cli_cfg_default(pj_cli_cfg *param);
 /**
  * Register a front end to the CLI application.
  *
- * @param cli		The CLI application.
+ * @param CLI		The CLI application.
  * @param fe		The CLI front end to be registered.
  */
 PJ_DECL(void) pj_cli_register_front_end(pj_cli_t *cli,
@@ -400,14 +400,12 @@ PJ_DECL(void) pj_cli_register_front_end(pj_cli_t *cli,
  * Create a new complete command specification from an XML node text and
  * register it to the CLI application.
  *
- * Note that the input string MUST be NULL terminated.
- *
  * @param cli		The CLI application.
  * @param group		Optional group to which this command will be added
  * 			to, or specify NULL if this command is a root
  * 			command.
  * @param xml		Input string containing XML node text for the
- * 			command, MUST be NULL terminated.
+ * 			command.
  * @param handler	Function handler for the command. This must be NULL
  * 			if the command specifies a command group.
  * @param p_cmd		Optional pointer to store the newly created

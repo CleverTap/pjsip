@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: sip_transport.h 4775 2014-03-04 02:18:51Z nanang $ */
 /* 
  * Copyright (C) 2008-2011 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -221,25 +221,11 @@ typedef enum pjsip_tpselector_type
  * application specificly request that a particular transport/listener
  * should be used to send request. This structure is used when calling
  * pjsip_tsx_set_transport() and pjsip_dlg_set_transport().
- *
- * If application disables connection reuse and wants to force creating
- * a new transport, it needs to consider the following couple of things:
- * - If it still wants to reuse an existing transport (if any), it
- *   needs to keep a reference to that transport and specifically set
- *   the transport to be used for sending requests.
- * - Delete those existing transports manually when no longer needed.
  */
 typedef struct pjsip_tpselector
 {
     /** The type of data in the union */
     pjsip_tpselector_type   type;
-
-    /**
-     * Whether to disable reuse of an existing connection.
-     * This setting will be ignored if (type == PJSIP_TPSELECTOR_TRANSPORT)
-     * and transport in the union below is set.
-     */
-    pj_bool_t disable_connection_reuse;
 
     /** Union representing the transport/listener criteria to be used. */
     union {
@@ -735,22 +721,6 @@ PJ_DECL(char*) pjsip_tx_data_get_info( pjsip_tx_data *tdata );
 PJ_DECL(pj_status_t) pjsip_tx_data_set_transport(pjsip_tx_data *tdata,
 						 const pjsip_tpselector *sel);
 
-/**
- * Clone pjsip_tx_data. This will duplicate the message contents of
- * pjsip_tx_data (pjsip_tx_data.msg) and add reference count to the tdata.
- * Once application has finished using the cloned pjsip_tx_data,
- * it must release it by calling  #pjsip_tx_data_dec_ref().
- * Currently, this will only clone response message.
- *
- * @param src	    The source to be cloned.
- * @param flags	    Optional flags. Must be zero for now.
- * @param p_rdata   Pointer to receive the cloned tdata.
- *
- * @return	    PJ_SUCCESS on success or the appropriate error.
- */
-PJ_DECL(pj_status_t) pjsip_tx_data_clone(const pjsip_tx_data *src,
-                                         unsigned flags,
-                                         pjsip_tx_data **p_rdata);
 
 /*****************************************************************************
  *
@@ -810,8 +780,6 @@ struct pjsip_transport
     pj_pool_t		   *pool;	    /**< Pool used by transport.    */
     pj_atomic_t		   *ref_cnt;	    /**< Reference counter.	    */
     pj_lock_t		   *lock;	    /**< Lock object.		    */
-    pj_grp_lock_t	   *grp_lock;	    /**< Group lock for sync with
-					         ioqueue and timer.	    */
     pj_bool_t		    tracing;	    /**< Tracing enabled?	    */
     pj_bool_t		    is_shutdown;    /**< Being shutdown?	    */
     pj_bool_t		    is_destroying;  /**< Destroy in progress?	    */
@@ -831,8 +799,6 @@ struct pjsip_transport
     
     pjsip_endpoint	   *endpt;	    /**< Endpoint instance.	    */
     pjsip_tpmgr		   *tpmgr;	    /**< Transport manager.	    */
-    pjsip_tpfactory	   *factory;	    /**< Factory instance. Note: it
-					         may be invalid/shutdown.   */
     pj_timer_entry	    idle_timer;	    /**< Timer when ref cnt is zero.*/
 
     pj_timestamp	    last_recv_ts;   /**< Last time receiving data.  */
@@ -935,23 +901,6 @@ PJ_DECL(pj_status_t) pjsip_transport_register( pjsip_tpmgr *mgr,
 PJ_DECL(pj_status_t) pjsip_transport_shutdown(pjsip_transport *tp);
 
 /**
- * Start shutdown procedure for this transport. If \a force is false,
- * the API is the same as #pjsip_transport_shutdown(), while
- * if \a force is true, existing transport users will immediately
- * receive PJSIP_TP_STATE_DISCONNECTED notification and should not
- * use the transport anymore. In either case, transport will
- * only be destroyed after all objects release their references.
- *
- * @param tp		    The transport.
- * @param force		    Force transport to immediately send
- *			    disconnection state notification.
- *
- * @return		    PJ_SUCCESS on success.
- */
-PJ_DECL(pj_status_t) pjsip_transport_shutdown2(pjsip_transport *tp,
-					       pj_bool_t force);
-
-/**
  * Destroy a transport when there is no object currently uses the transport.
  * This function is normally called internally by transport manager or the
  * transport itself. Application should use #pjsip_transport_shutdown()
@@ -1043,7 +992,6 @@ struct pjsip_tpfactory
     pjsip_transport_type_e  type;	    /**< Transport type.	*/
     char		   *type_name;      /**< Type string name.	*/
     unsigned		    flag;	    /**< Transport flag.	*/
-    char		   *info;	    /**< Transport info/description.*/
 
     pj_sockaddr		    local_addr;	    /**< Bound address.		*/
     pjsip_host_port	    addr_name;	    /**< Published name.	*/
@@ -1562,67 +1510,6 @@ PJ_DECL(pj_status_t) pjsip_transport_remove_state_listener (
 				    pjsip_transport *tp,
 				    pjsip_tp_state_listener_key *key,
 				    const void *user_data);
-
-
-/**
- * Structure of dropped received data.
- */
-typedef struct pjsip_tp_dropped_data
-{
-    /**
-     * The transport receiving the data.
-     */
-    pjsip_transport *tp;
-
-    /**
-     * The data.
-     */
-    void	    *data;
-
-    /**
-     * The data length.
-     * If the status field below indicates an invalid SIP message
-     * (PJSIP_EINVALIDMSG) and application detects a SIP message
-     * at position p, it can pass the data back to PJSIP to be processed
-     * by setting the len to p. This can be useful for apps which
-     * wishes to use the same transport for SIP signalling and non-SIP
-     * purposes (such as SIP outbound using STUN message).
-     */
-    pj_size_t	     len;
-
-    /**
-     * The status or reason of drop. For example, a leading newlines (common
-     * keep-alive packet) will be dropped with status PJ_EIGNORED, an invalid
-     * SIP message will have status PJSIP_EINVALIDMSG, a SIP message overflow
-     * will have status PJSIP_ERXOVERFLOW.
-     */
-    pj_status_t	     status;
-
-} pjsip_tp_dropped_data;
-
-
-/**
- * Type of callback to data dropping notifications.
- *
- * @param data		The dropped data.
- */
-typedef void (*pjsip_tp_on_rx_dropped_cb)(pjsip_tp_dropped_data *data);
-
-
-/**
- * Set callback of data dropping. The caller will be notified whenever any
- * received data is dropped (due to leading newlines or keep-alive packet or
- * invalid SIP message). This callback can be useful for application,
- * for example, to implement custom keep-alive mechanism or connection
- * availability detection.
- *
- * @param mgr	    Transport manager.
- * @param cb	    The callback function, set to NULL to reset the callback.
- *
- * @return	    PJ_SUCCESS on success, or the appropriate error code.
- */
-PJ_DECL(pj_status_t) pjsip_tpmgr_set_drop_data_cb(pjsip_tpmgr *mgr,
-						  pjsip_tp_on_rx_dropped_cb cb);
 
 
 /**

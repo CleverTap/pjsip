@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: ice_strans.h 4606 2013-10-01 05:00:57Z ming $ */
 /* 
  * Copyright (C) 2008-2011 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -98,7 +98,7 @@ PJ_BEGIN_DECL
  *    data will be sent using the candidate from the successful/nominated
  *    pair. The ICE stream transport may not be able to send data while 
  *    negotiation is in progress.\n\n
- *  - application sends data by using #pj_ice_strans_sendto2(). Incoming
+ *  - application sends data by using #pj_ice_strans_sendto(). Incoming
  *    data will be reported in \a on_rx_data() callback of the
  *    #pj_ice_strans_cb.\n\n
  *  - once the media session has finished (e.g. user hangs up the call),
@@ -113,14 +113,6 @@ PJ_BEGIN_DECL
  *    applications.\n\n
  */
 
-/* Deprecated API pj_ice_strans_sendto() due to its limitations. See
- * below for more info and refer to
- * https://trac.pjsip.org/repos/ticket/2229 for more details.
- */
-#ifndef DEPRECATED_FOR_TICKET_2229
-#  define DEPRECATED_FOR_TICKET_2229	0
-#endif
-
 /** Forward declaration for ICE stream transport. */
 typedef struct pj_ice_strans pj_ice_strans;
 
@@ -133,14 +125,10 @@ typedef enum pj_ice_strans_op
     /** Negotiation */
     PJ_ICE_STRANS_OP_NEGOTIATION,
 
-    /** This operation is used to report failure in keep-alive operation.
+    /** This operatino is used to report failure in keep-alive operation.
      *  Currently it is only used to report TURN Refresh failure.
      */
-    PJ_ICE_STRANS_OP_KEEP_ALIVE,
-
-    /** IP address change notification from STUN keep-alive operation.
-     */
-    PJ_ICE_STRANS_OP_ADDR_CHANGE
+    PJ_ICE_STRANS_OP_KEEP_ALIVE
 
 } pj_ice_strans_op;
 
@@ -169,27 +157,6 @@ typedef struct pj_ice_strans_cb
 			  unsigned src_addr_len);
 
     /**
-     * This callback is optional and will be called to notify the status of
-     * async send operations.
-     *
-     * @param ice_st	    The ICE stream transport.
-     * @param sent	    If value is positive non-zero it indicates the
-     *			    number of data sent. When the value is negative,
-     *			    it contains the error code which can be retrieved
-     *			    by negating the value (i.e. status=-sent).
-     */
-    void    (*on_data_sent)(pj_ice_strans *sock,
-			    pj_ssize_t sent);
-
-    /**
-     * An optional callback that will be called by the ICE transport when a
-     * valid pair has been found during ICE negotiation.
-     *
-     * @param ice_st	    The ICE stream transport.
-     */
-    void (*on_valid_pair)(pj_ice_strans *ice_st);
-
-    /**
      * Callback to report status of various ICE operations.
      * 
      * @param ice_st	    The ICE stream transport.
@@ -200,182 +167,7 @@ typedef struct pj_ice_strans_cb
 			       pj_ice_strans_op op,
 			       pj_status_t status);
 
-    /**
-     * Callback to report a new ICE local candidate, e.g: after successful
-     * STUN Binding, after a successful TURN allocation. Only new candidates
-     * whose type is server reflexive or relayed will be notified via this
-     * callback. This callback also indicates end-of-candidate via parameter
-     * 'last'.
-     *
-     * Trickle ICE can use this callback to convey the new candidate
-     * to remote agent and monitor end-of-candidate indication.
-     *
-     * @param ice_st	    The ICE stream transport.
-     * @param cand	    The new local candidate, can be NULL when the last
-     *			    local candidate initialization failed/timeout.
-     * @param end_of_cand   PJ_TRUE if this is the last of local candidate.
-     */
-    void    (*on_new_candidate)(pj_ice_strans *ice_st,
-				const pj_ice_sess_cand *cand,
-				pj_bool_t end_of_cand);
-
 } pj_ice_strans_cb;
-
-
-/**
- * STUN and local transport settings for ICE stream transport.
- */
-typedef struct pj_ice_strans_stun_cfg
-{
-    /**
-     * Address family, IPv4 or IPv6.
-     *
-     * Default value is pj_AF_INET() (IPv4)
-     */
-    int			 af;
-
-    /**
-     * Optional configuration for STUN transport. The default
-     * value will be initialized with #pj_stun_sock_cfg_default().
-     */
-    pj_stun_sock_cfg	 cfg;
-
-    /**
-     * Maximum number of host candidates to be added. If the
-     * value is zero, no host candidates will be added.
-     *
-     * Default: 64
-     */
-    unsigned		 max_host_cands;
-
-    /**
-     * Include loopback addresses in the host candidates.
-     *
-     * Default: PJ_FALSE
-     */
-    pj_bool_t		 loop_addr;
-
-    /**
-     * Specify the STUN server domain or hostname or IP address.
-     * If DNS SRV resolution is required, application must fill
-     * in this setting with the domain name of the STUN server 
-     * and set the resolver instance in the \a resolver field.
-     * Otherwise if the \a resolver setting is not set, this
-     * field will be resolved with hostname resolution and in
-     * this case the \a port field must be set.
-     *
-     * The \a port field should also be set even when DNS SRV
-     * resolution is used, in case the DNS SRV resolution fails.
-     *
-     * When this field is empty, STUN mapped address resolution
-     * will not be performed. In this case only ICE host candidates
-     * will be added to the ICE transport, unless if \a no_host_cands
-     * field is set. In this case, both host and srflx candidates 
-     * are disabled.
-     *
-     * If there are more than one STUN candidates per ICE stream
-     * transport component, the standard recommends to use the same
-     * STUN server for all STUN candidates.
-     *
-     * The default value is empty.
-     */
-    pj_str_t		 server;
-
-    /**
-     * The port number of the STUN server, when \a server
-     * field specifies a hostname rather than domain name. This
-     * field should also be set even when the \a server
-     * specifies a domain name, to allow DNS SRV resolution
-     * to fallback to DNS A/AAAA resolution when the DNS SRV
-     * resolution fails.
-     *
-     * The default value is PJ_STUN_PORT.
-     */
-    pj_uint16_t		 port;
-
-    /**
-     * Ignore STUN resolution error and proceed with just local
-     * addresses.
-     *
-     * The default is PJ_FALSE
-     */
-    pj_bool_t		 ignore_stun_error;
-
-} pj_ice_strans_stun_cfg;
-
-
-/**
- * TURN transport settings for ICE stream transport.
- */
-typedef struct pj_ice_strans_turn_cfg
-{
-    /**
-     * Address family, IPv4 or IPv6.
-     *
-     * Default value is pj_AF_INET() (IPv4)
-     */
-    int			 af;
-
-    /**
-     * Optional TURN socket settings. The default values will be
-     * initialized by #pj_turn_sock_cfg_default(). This contains
-     * settings such as QoS.
-     */
-    pj_turn_sock_cfg	 cfg;
-
-    /**
-     * Specify the TURN server domain or hostname or IP address.
-     * If DNS SRV resolution is required, application must fill
-     * in this setting with the domain name of the TURN server 
-     * and set the resolver instance in the \a resolver field.
-     * Otherwise if the \a resolver setting is not set, this
-     * field will be resolved with hostname resolution and in
-     * this case the \a port field must be set.
-     *
-     * The \a port field should also be set even when DNS SRV
-     * resolution is used, in case the DNS SRV resolution fails.
-     *
-     * When this field is empty, relay candidate will not be
-     * created.
-     *
-     * The default value is empty.
-     */
-    pj_str_t		 server;
-
-    /**
-     * The port number of the TURN server, when \a server
-     * field specifies a hostname rather than domain name. This
-     * field should also be set even when the \a server
-     * specifies a domain name, to allow DNS SRV resolution
-     * to fallback to DNS A/AAAA resolution when the DNS SRV
-     * resolution fails.
-     *
-     * Default is zero.
-     */
-    pj_uint16_t		 port;
-
-    /**
-     * Type of connection to the TURN server.
-     *
-     * Default is PJ_TURN_TP_UDP.
-     */
-    pj_turn_tp_type	 conn_type;
-
-    /**
-     * Credential to be used for the TURN session. This setting
-     * is mandatory.
-     *
-     * Default is to have no credential.
-     */
-    pj_stun_auth_cred	 auth_cred;
-
-    /**
-     * Optional TURN Allocate parameter. The default value will be
-     * initialized by #pj_turn_alloc_param_default().
-     */
-    pj_turn_alloc_param	 alloc_param;
-
-} pj_ice_strans_turn_cfg;
 
 
 /**
@@ -386,14 +178,10 @@ typedef struct pj_ice_strans_turn_cfg
 typedef struct pj_ice_strans_cfg
 {
     /**
-     * The address family which will be used as the default address
-     * in the SDP offer. Setting this to pj_AF_UNSPEC() means that
-     * the address family will not be considered during the process
-     * of default candidate selection.
-     *
-     * The default value is pj_AF_INET() (IPv4).
+     * Address family, IPv4 or IPv6. Currently only pj_AF_INET() (IPv4)
+     * is supported, and this is the default value.
      */
-    int			 af;
+    int			af;
 
     /**
      * STUN configuration which contains the timer heap and
@@ -421,68 +209,140 @@ typedef struct pj_ice_strans_cfg
     pj_ice_sess_options	 opt;
 
     /**
-     * Warning: this field is deprecated, please use \a stun_tp field instead.
-     * To maintain backward compatibility, if \a stun_tp_cnt is zero, the
-     * value of this field will be copied to \a stun_tp.
-     *
-     * STUN and local transport settings. This specifies the settings
-     * for local UDP socket address and STUN resolved address.
+     * STUN and local transport settings. This specifies the 
+     * settings for local UDP socket, which will be resolved
+     * to get the STUN mapped address.
      */
-    pj_ice_strans_stun_cfg stun;
+    struct {
+	/**
+	 * Optional configuration for STUN transport. The default
+	 * value will be initialized with #pj_stun_sock_cfg_default().
+	 */
+	pj_stun_sock_cfg     cfg;
+
+	/**
+	 * Maximum number of host candidates to be added. If the
+	 * value is zero, no host candidates will be added.
+	 *
+	 * Default: 64
+	 */
+	unsigned	     max_host_cands;
+
+	/**
+	 * Include loopback addresses in the host candidates.
+	 *
+	 * Default: PJ_FALSE
+	 */
+	pj_bool_t	     loop_addr;
+
+	/**
+	 * Specify the STUN server domain or hostname or IP address.
+	 * If DNS SRV resolution is required, application must fill
+	 * in this setting with the domain name of the STUN server 
+	 * and set the resolver instance in the \a resolver field.
+	 * Otherwise if the \a resolver setting is not set, this
+	 * field will be resolved with hostname resolution and in
+	 * this case the \a port field must be set.
+	 *
+	 * The \a port field should also be set even when DNS SRV
+	 * resolution is used, in case the DNS SRV resolution fails.
+	 *
+	 * When this field is empty, STUN mapped address resolution
+	 * will not be performed. In this case only ICE host candidates
+	 * will be added to the ICE transport, unless if \a no_host_cands
+	 * field is set. In this case, both host and srflx candidates 
+	 * are disabled.
+	 *
+	 * The default value is empty.
+	 */
+	pj_str_t	     server;
+
+	/**
+	 * The port number of the STUN server, when \a server
+	 * field specifies a hostname rather than domain name. This
+	 * field should also be set even when the \a server
+	 * specifies a domain name, to allow DNS SRV resolution
+	 * to fallback to DNS A/AAAA resolution when the DNS SRV
+	 * resolution fails.
+	 *
+	 * The default value is PJ_STUN_PORT.
+	 */
+	pj_uint16_t	     port;
+
+	/**
+	 * Ignore STUN resolution error and proceed with just local
+	 * addresses.
+	 *
+	 * The default is PJ_FALSE
+	 */
+	pj_bool_t	     ignore_stun_error;
+
+    } stun;
 
     /**
-     * Number of STUN transports.
-     *
-     * Default: 0
+     * TURN specific settings.
      */
-    unsigned		 stun_tp_cnt;
+    struct {
+	/**
+	 * Optional TURN socket settings. The default values will be
+	 * initialized by #pj_turn_sock_cfg_default(). This contains
+	 * settings such as QoS.
+	 */
+	pj_turn_sock_cfg     cfg;
 
-    /**
-     * STUN and local transport settings. This specifies the settings
-     * for local UDP socket address and STUN resolved address.
-     */
-    pj_ice_strans_stun_cfg stun_tp[PJ_ICE_MAX_STUN];
+	/**
+	 * Specify the TURN server domain or hostname or IP address.
+	 * If DNS SRV resolution is required, application must fill
+	 * in this setting with the domain name of the TURN server 
+	 * and set the resolver instance in the \a resolver field.
+	 * Otherwise if the \a resolver setting is not set, this
+	 * field will be resolved with hostname resolution and in
+	 * this case the \a port field must be set.
+	 *
+	 * The \a port field should also be set even when DNS SRV
+	 * resolution is used, in case the DNS SRV resolution fails.
+	 *
+	 * When this field is empty, relay candidate will not be
+	 * created.
+	 *
+	 * The default value is empty.
+	 */
+	pj_str_t	     server;
 
-    /**
-     * Warning: this field is deprecated, please use \a turn_tp field instead.
-     * To maintain backward compatibility, if \a turn_tp_cnt is zero, the
-     * value of this field will be copied to \a turn_tp.
-     *
-     * TURN transport settings.
-     */
-    pj_ice_strans_turn_cfg turn;
+	/**
+	 * The port number of the TURN server, when \a server
+	 * field specifies a hostname rather than domain name. This
+	 * field should also be set even when the \a server
+	 * specifies a domain name, to allow DNS SRV resolution
+	 * to fallback to DNS A/AAAA resolution when the DNS SRV
+	 * resolution fails.
+	 *
+	 * Default is zero.
+	 */
+	pj_uint16_t	     port;
 
-    /**
-     * Number of TURN transports.
-     *
-     * Default: 0
-     */
-    unsigned		 turn_tp_cnt;
+	/**
+	 * Type of connection to the TURN server.
+	 *
+	 * Default is PJ_TURN_TP_UDP.
+	 */
+	pj_turn_tp_type	     conn_type;
 
-    /**
-     * TURN transport settings.
-     */
-    pj_ice_strans_turn_cfg turn_tp[PJ_ICE_MAX_TURN];
+	/**
+	 * Credential to be used for the TURN session. This setting
+	 * is mandatory.
+	 *
+	 * Default is to have no credential.
+	 */
+	pj_stun_auth_cred    auth_cred;
 
-    /**
-     * Number of send buffers used for pj_ice_strans_sendto2(). If the send
-     * buffers are full, pj_ice_strans_sendto()/sendto2() will return
-     * PJ_EBUSY.
-     *
-     * Set this to 0 to disable buffering (then application will have to
-     * maintain the buffer passed to pj_ice_strans_sendto()/sendto2()
-     * until it has been sent).
-     *
-     * Default: 4
-     */
-    unsigned 		 num_send_buf;
+	/**
+	 * Optional TURN Allocate parameter. The default value will be
+	 * initialized by #pj_turn_alloc_param_default().
+	 */
+	pj_turn_alloc_param  alloc_param;
 
-    /**
-     * Buffer size used for pj_ice_strans_sendto2().
-     *
-     * Default: 0 (size determined by the size of the first packet sent).
-     */
-    unsigned 		 send_buf_size;
+    } turn;
 
     /**
      * Component specific settings, which will override the settings in
@@ -602,22 +462,6 @@ typedef enum pj_ice_strans_state
 PJ_DECL(void) pj_ice_strans_cfg_default(pj_ice_strans_cfg *cfg);
 
 
-/** 
- * Initialize ICE STUN transport configuration with default values.
- *
- * @param cfg		The configuration to be initialized.
- */
-PJ_DECL(void) pj_ice_strans_stun_cfg_default(pj_ice_strans_stun_cfg *cfg);
-
-
-/** 
- * Initialize ICE TURN transport configuration with default values.
- *
- * @param cfg		The configuration to be initialized.
- */
-PJ_DECL(void) pj_ice_strans_turn_cfg_default(pj_ice_strans_turn_cfg *cfg);
-
-
 /**
  * Copy configuration.
  *
@@ -719,19 +563,6 @@ PJ_DECL(pj_status_t) pj_ice_strans_get_options(pj_ice_strans *ice_st,
  */
 PJ_DECL(pj_status_t) pj_ice_strans_set_options(pj_ice_strans *ice_st,
 					       const pj_ice_sess_options *opt);
-
-/**
- * Update number of components of the ICE stream transport. This can only
- * reduce the number of components from the initial value specified in
- * pj_ice_strans_create() and before ICE session is initialized.
- *
- * @param ice_st	The ICE stream transport.
- * @param comp_cnt	Number of components.
- *
- * @return		PJ_SUCCESS on success, or the appropriate error.
- */
-PJ_DECL(pj_status_t) pj_ice_strans_update_comp_cnt(pj_ice_strans *ice_st,
-						   unsigned comp_cnt);
 
 /**
  * Get the group lock for this ICE stream transport.
@@ -945,36 +776,6 @@ PJ_DECL(pj_status_t) pj_ice_strans_start_ice(pj_ice_strans *ice_st,
 					     unsigned rcand_cnt,
 					     const pj_ice_sess_cand rcand[]);
 
-
-/**
- * Update check list after receiving new remote ICE candidates or after
- * new local ICE candidates are found and conveyed to remote. This function
- * can also be called after receiving end of candidate indication from
- * either remote or local agent.
- *
- * This function is only applicable when trickle ICE is not disabled and
- * after ICE session has been created using pj_ice_strans_init_ice().
- *
- * @param ice_st	The ICE stream transport.
- * @param rem_ufrag	Remote ufrag, as seen in the SDP received from
- *			the remote agent.
- * @param rem_passwd	Remote password, as seen in the SDP received from
- *			the remote agent.
- * @param rcand_cnt	Number of new remote candidates in the array.
- * @param rcand		New remote candidates array.
- * @param rcand_end	Set to PJ_TRUE if remote has signalled
- *			end-of-candidate.
- *
- * @return		PJ_SUCCESS, or the appropriate error code.
- */
-PJ_DECL(pj_status_t) pj_ice_strans_update_check_list(
-					     pj_ice_strans *ice_st,
-					     const pj_str_t *rem_ufrag,
-					     const pj_str_t *rem_passwd,
-					     unsigned rcand_cnt,
-					     const pj_ice_sess_cand rcand[],
-					     pj_bool_t rcand_end);
-
 /**
  * Retrieve the candidate pair that has been nominated and successfully
  * checked for the specified component. If ICE negotiation is still in
@@ -1015,7 +816,6 @@ pj_ice_strans_get_valid_pair(const pj_ice_strans *ice_st,
 PJ_DECL(pj_status_t) pj_ice_strans_stop_ice(pj_ice_strans *ice_st);
 
 
-#if !DEPRECATED_FOR_TICKET_2229
 /**
  * Send outgoing packet using this transport. 
  * Application can send data (normally RTP or RTCP packets) at any time
@@ -1028,19 +828,6 @@ PJ_DECL(pj_status_t) pj_ice_strans_stop_ice(pj_ice_strans *ice_st);
  * successfully, this function will send the data to the nominated remote 
  * address, as negotiated by ICE.
  *
- * Limitations:
- * 1. This function cannot inform the app whether the data has been sent,
- *    or currently still pending.
- * 2. In case that the data is still pending, the application has no way
- *    of knowing the status of the send operation (whether it's a success
- *    or failure).
- * Due to these limitations, the API is deprecated and will be removed
- * in the future.
- *
- * Note that application shouldn't mix using pj_ice_strans_sendto() and
- * pj_ice_strans_sendto2() to avoid inconsistent calling of
- * on_data_sent() callback.
- *
  * @param ice_st	The ICE stream transport.
  * @param comp_id	Component ID.
  * @param data		The data or packet to be sent.
@@ -1048,8 +835,7 @@ PJ_DECL(pj_status_t) pj_ice_strans_stop_ice(pj_ice_strans *ice_st);
  * @param dst_addr	The destination address.
  * @param dst_addr_len	Length of destination address.
  *
- * @return		PJ_SUCCESS if data has been sent, or will be sent
- *			later. No callback will be called.
+ * @return		PJ_SUCCESS if data is sent successfully.
  */
 PJ_DECL(pj_status_t) pj_ice_strans_sendto(pj_ice_strans *ice_st,
 					  unsigned comp_id,
@@ -1057,47 +843,6 @@ PJ_DECL(pj_status_t) pj_ice_strans_sendto(pj_ice_strans *ice_st,
 					  pj_size_t data_len,
 					  const pj_sockaddr_t *dst_addr,
 					  int dst_addr_len);
-#endif
-
-
-/**
- * Send outgoing packet using this transport.
- * Application can send data (normally RTP or RTCP packets) at any time
- * by calling this function. This function takes a destination
- * address as one of the arguments, and this destination address should
- * be taken from the default transport address of the component (that is
- * the address in SDP c= and m= lines, or in a=rtcp attribute).
- * If ICE negotiation is in progress, this function will try to send the data
- * via any valid candidate pair (which has passed ICE connectivity test).
- * If ICE negotiation has completed successfully, this function will send
- * the data to the nominated remote address, as negotiated by ICE.
- * If the ICE negotiation fails or valid candidate pair is not yet available,
- * this function will send the data using default candidate to the specified
- * destination address.
- *
- * Note that application shouldn't mix using pj_ice_strans_sendto() and
- * pj_ice_strans_sendto2() to avoid inconsistent calling of
- * on_data_sent() callback.
- *
- * @param ice_st	The ICE stream transport.
- * @param comp_id	Component ID.
- * @param data		The data or packet to be sent.
- * @param data_len	Size of data or packet, in bytes.
- * @param dst_addr	The destination address.
- * @param dst_addr_len	Length of destination address.
- *
- * @return		PJ_SUCCESS if data has been sent, or
- *		    	PJ_EPENDING if data cannot be sent immediately. In
- *		    	this case the \a on_data_sent() callback will be
- *		    	called when data is actually sent. Any other return
- *		    	value indicates error condition.
- */
-PJ_DECL(pj_status_t) pj_ice_strans_sendto2(pj_ice_strans *ice_st,
-					   unsigned comp_id,
-					   const void *data,
-					   pj_size_t data_len,
-					   const pj_sockaddr_t *dst_addr,
-					   int dst_addr_len);
 
 
 /**

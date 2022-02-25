@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: h263_packetizer.h 3715 2011-08-19 09:35:25Z nanang $ */
 /* 
  * Copyright (C) 2008-2011 Teluu Inc. (http://www.teluu.com)
  *
@@ -25,8 +25,8 @@
  * @brief Packetizes/unpacketizes H.263 bitstream into RTP payload.
  */
 
-#include "../pj/pool.h"
-#include "../pj/types.h"
+#include <pj/pool.h>
+#include <pj/types.h>
 
 PJ_BEGIN_DECL
 

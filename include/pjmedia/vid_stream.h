@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: vid_stream.h 4043 2012-04-12 13:41:50Z nanang $ */
 /* 
  * Copyright (C) 2011 Teluu Inc. (http://www.teluu.com)
  *
@@ -29,10 +29,8 @@
 #include "../pjmedia/jbuf.h"
 #include "../pjmedia/port.h"
 #include "../pjmedia/rtcp.h"
-#include "../pjmedia/rtcp_fb.h"
 #include "../pjmedia/transport.h"
 #include "../pjmedia/vid_codec.h"
-#include "../pjmedia/stream_common.h"
 #include "../pj/sock.h"
 
 PJ_BEGIN_DECL
@@ -119,28 +117,6 @@ typedef struct pjmedia_vid_stream_rc_config
 
 } pjmedia_vid_stream_rc_config;
 
-/**
- * Structure of configuration settings for video stream sending keyframe 
- * after it is created.
- */
-typedef struct pjmedia_vid_stream_sk_config
-{
-    /**
-     * The number of keyframe to be sent after the stream is created.
-     *
-     * Default: PJMEDIA_VID_STREAM_START_KEYFRAME_CNT
-     */
-    unsigned			    count;
-
-    /**
-     * The keyframe sending interval after the stream is created.
-     *
-     * Default: PJMEDIA_VID_STREAM_START_KEYFRAME_INTERVAL_MSEC
-     */
-    unsigned			    interval;
-
-} pjmedia_vid_stream_sk_config;
-
 
 /** 
  * This structure describes video stream information. Each video stream
@@ -152,21 +128,13 @@ typedef struct pjmedia_vid_stream_info
     pjmedia_type	type;	    /**< Media type (audio, video)	    */
     pjmedia_tp_proto	proto;	    /**< Transport protocol (RTP/AVP, etc.) */
     pjmedia_dir		dir;	    /**< Media direction.		    */
-    pj_sockaddr		local_addr; /**< Local RTP address		    */
     pj_sockaddr		rem_addr;   /**< Remote RTP address		    */
     pj_sockaddr		rem_rtcp;   /**< Optional remote RTCP address. If
 					 sin_family is zero, the RTP address
 					 will be calculated from RTP.	    */
-    pj_bool_t		rtcp_mux;   /**< Use RTP and RTCP multiplexing.     */
-    pjmedia_rtcp_fb_info loc_rtcp_fb; /**< Local RTCP-FB info.		    */
-    pjmedia_rtcp_fb_info rem_rtcp_fb; /**< Remote RTCP-FB info.		    */
     unsigned		tx_pt;	    /**< Outgoing codec paylaod type.	    */
     unsigned		rx_pt;	    /**< Incoming codec paylaod type.	    */
     pj_uint32_t		ssrc;	    /**< RTP SSRC.			    */
-    pj_str_t		cname; 	    /**< RTCP CNAME.			    */
-    pj_bool_t		has_rem_ssrc;/**<Has remote RTP SSRC?		    */
-    pj_uint32_t		rem_ssrc;   /**< Remote RTP SSRC.		    */
-    pj_str_t		rem_cname;  /**< Remote RTCP CNAME.		    */
     pj_uint32_t		rtp_ts;	    /**< Initial RTP timestamp.		    */
     pj_uint16_t		rtp_seq;    /**< Initial RTP sequence number.	    */
     pj_uint8_t		rtp_seq_ts_set;
@@ -186,8 +154,6 @@ typedef struct pjmedia_vid_stream_info
     pj_bool_t		use_ka;	    /**< Stream keep-alive and NAT hole punch
 					 (see #PJMEDIA_STREAM_ENABLE_KA)
 					 is enabled?			    */
-    pjmedia_stream_ka_config ka_cfg;
-                                    /**< Stream send kep-alive settings.    */
 #endif
 
     pjmedia_vid_codec_info   codec_info;  /**< Incoming codec format info.  */
@@ -199,9 +165,6 @@ typedef struct pjmedia_vid_stream_info
 
     pjmedia_vid_stream_rc_config rc_cfg;
                                     /**< Stream send rate control settings. */
-
-    pjmedia_vid_stream_sk_config sk_cfg;
-				    /**< Stream send keyframe settings.	    */
 } pjmedia_vid_stream_info;
 
 
@@ -237,14 +200,6 @@ pjmedia_vid_stream_info_from_sdp(pjmedia_vid_stream_info *si,
  */
 PJ_DECL(void)
 pjmedia_vid_stream_rc_config_default(pjmedia_vid_stream_rc_config *cfg);
-
-/**
- * Initialize the video stream send keyframe with default settings.
- *
- * @param cfg		Video stream send keyframe structure to be initialized.
- */
-PJ_DECL(void)
-pjmedia_vid_stream_sk_config_default(pjmedia_vid_stream_sk_config *cfg);
 
 
 /*
@@ -437,9 +392,9 @@ PJ_DECL(pj_status_t) pjmedia_vid_stream_send_keyframe(
 
 
 /**
- * Send RTCP SDES for the video stream.
+ * Send RTCP SDES for the media stream.
  *
- * @param stream	The video stream.
+ * @param stream	The media stream.
  *
  * @return		PJ_SUCCESS on success.
  */
@@ -448,43 +403,14 @@ PJ_DECL(pj_status_t) pjmedia_vid_stream_send_rtcp_sdes(
 
 
 /**
- * Send RTCP BYE for the video stream.
+ * Send RTCP BYE for the media stream.
  *
- * @param stream	The video stream.
+ * @param stream	The media stream.
  *
  * @return		PJ_SUCCESS on success.
  */
 PJ_DECL(pj_status_t) pjmedia_vid_stream_send_rtcp_bye(
 						pjmedia_vid_stream *stream);
-
-
-/**
- * Send RTCP PLI for the video stream.
- *
- * @param stream	The video stream.
- *
- * @return		PJ_SUCCESS on success.
- */
-PJ_DECL(pj_status_t) pjmedia_vid_stream_send_rtcp_pli(
-						pjmedia_vid_stream *stream);
-
-
-/**
- * Get the RTP session information of the video media stream. This function 
- * can be useful for app with custom media transport to inject/filter some 
- * outgoing/incoming proprietary packets into normal video RTP traffics.
- * This will return the original pointer to the internal states of the stream,
- * and generally it is not advisable for app to modify them.
- * 
- * @param stream	The video media stream.
- *
- * @param session_info	The stream session info.
- *
- * @return		PJ_SUCCESS on success.
- */
-PJ_DECL(pj_status_t)
-pjmedia_vid_stream_get_rtp_session_info(pjmedia_vid_stream *stream,
-				   pjmedia_stream_rtp_sess_info *session_info);
 
 
 /**

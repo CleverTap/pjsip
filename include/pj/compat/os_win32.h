@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: os_win32.h 3553 2011-05-05 06:14:19Z nanang $ */
 /* 
  * Copyright (C) 2008-2011 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -57,7 +57,6 @@
 #define PJ_HAS_SYS_TYPES_H	    1
 #define PJ_HAS_TIME_H		    1
 #define PJ_HAS_UNISTD_H		    0
-#define PJ_HAS_LIMITS_H		    1
 
 #define PJ_HAS_MSWSOCK_H	    1
 #define PJ_HAS_WINSOCK_H	    0
@@ -134,14 +133,6 @@
  * Default: 0 (let OS allocate memory for thread's stack).
  */
 #define PJ_THREAD_ALLOCATE_STACK    	0
-
-/* Endianness */
-#if defined(_M_ARM64)
-#   ifndef PJ_IS_LITTLE_ENDIAN
-#       define PJ_IS_LITTLE_ENDIAN	1
-#       define PJ_IS_BIG_ENDIAN	0
-#   endif
-#endif
 
 
 #endif	/* __PJ_COMPAT_OS_WIN32_H__ */

@@ -60,4 +60,5 @@ function pjsip() {
 
 #openssl
 #opus
-pjsip
+#pjsip
+echo "build is disabled in legacy branch"

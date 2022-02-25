@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: transport_srtp.h 3999 2012-03-30 07:10:13Z bennylp $ */
 /* 
  * Copyright (C) 2008-2011 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -115,13 +115,6 @@ typedef enum pjmedia_srtp_use
     PJMEDIA_SRTP_DISABLED,
 
     /**
-     * When this flag is specified, SRTP setting is unknown. This is to set
-     * the initial remote's SRTP usage. It will be set later after remote's
-     * policy in the SDP is received.
-     */
-    PJMEDIA_SRTP_UNKNOWN = PJMEDIA_SRTP_DISABLED,
-
-    /**
      * When this flag is specified, SRTP will be advertised as optional and
      * incoming SRTP offer will be accepted.
      */
@@ -137,65 +130,6 @@ typedef enum pjmedia_srtp_use
 
 
 /**
- * This enumeration specifies SRTP keying methods.
- */
-typedef enum pjmedia_srtp_keying_method
-{
-    /**
-     * Session Description (SDES).
-     */
-    PJMEDIA_SRTP_KEYING_SDES,
-
-    /**
-     * DTLS-SRTP.
-     */
-    PJMEDIA_SRTP_KEYING_DTLS_SRTP,
-
-    /**
-     * Number of keying method.
-     */
-    PJMEDIA_SRTP_KEYINGS_COUNT
-
-} pjmedia_srtp_keying_method;
-
-
-/**
- * Structure containing callbacks to receive SRTP notifications.
- */
-typedef struct pjmedia_srtp_cb
-{
-    /**
-     * This callback will be called when SRTP negotiation completes. This
-     * callback will be invoked when the negotiation is done outside of
-     * the SDP signalling, such as in DTLS-SRTP.
-     *
-     * @param tp	PJMEDIA SRTP transport.
-     * @param status	Operation status.
-     */
-    void    (*on_srtp_nego_complete)(pjmedia_transport *tp,
-				     pj_status_t status);
-
-} pjmedia_srtp_cb;
-
-
-/**
- * RTP sequence rollover counter settings.
- */
-typedef struct pjmedia_srtp_roc
-{
-    /**
-     * The synchronization source.
-     */
-    pj_uint32_t	    ssrc;
-
-    /**
-     * The rollover counter.
-     */
-    pj_uint32_t	    roc;
-
-} pjmedia_srtp_roc;
-
-/**
  * Settings to be given when creating SRTP transport. Application should call
  * #pjmedia_srtp_setting_default() to initialize this structure with its 
  * default values.
@@ -205,80 +139,23 @@ typedef struct pjmedia_srtp_setting
     /**
      * Specify the usage policy. Default is PJMEDIA_SRTP_OPTIONAL.
      */
-    pjmedia_srtp_use		 use;
+    pjmedia_srtp_use		use;
 
     /**
      * Specify whether the SRTP transport should close the member transport 
      * when it is destroyed. Default: PJ_TRUE.
      */
-    pj_bool_t			 close_member_tp;
+    pj_bool_t			close_member_tp;
 
     /**
-     * Specify the number of crypto suite settings. If set to zero, all
-     * available cryptos will be enabled. Default: zero.
+     * Specify the number of crypto suite settings.
      */
-    unsigned			 crypto_count;
+    unsigned			crypto_count;
 
     /**
-     * Specify individual crypto suite setting and its priority order.
-     *
-     * Notes for DTLS-SRTP keying:
-     *  - Currently only supports these cryptos: AES_CM_128_HMAC_SHA1_80,
-     *    AES_CM_128_HMAC_SHA1_32, AEAD_AES_256_GCM, and AEAD_AES_128_GCM.
-     *  - SRTP key is not configurable.
+     * Specify individual crypto suite setting.
      */
-    pjmedia_srtp_crypto		 crypto[PJMEDIA_SRTP_MAX_CRYPTOS];
-
-    /**
-     * Specify the number of enabled keying methods. If set to zero, all
-     * keyings will be enabled. Maximum value is PJMEDIA_SRTP_MAX_KEYINGS.
-     *
-     * Default is zero (all keyings are enabled with priority order:
-     * SDES, DTLS-SRTP).
-     */
-    unsigned			 keying_count;
-
-    /**
-     * Specify enabled keying methods and its priority order. Keying method
-     * with higher priority will be given earlier chance to process the SDP,
-     * for example as currently only one keying is supported in the SDP offer,
-     * keying with first priority will be likely used in the SDP offer.
-     */
-    pjmedia_srtp_keying_method	 keying[PJMEDIA_SRTP_KEYINGS_COUNT];
-
-    /**
-     * RTP sequence rollover counter initialization value for incoming
-     * direction. This is useful to maintain ROC after media transport
-     * recreation such as in IP change scenario.
-     */
-    pjmedia_srtp_roc		 rx_roc;
-
-    /**
-     * The previous value of RTP sequence rollover counter. This is
-     * useful in situations when we expect the remote to reset/maintain
-     * ROC but for some reason, they don't. Thus, when we encounter
-     * SRTP packet unprotect failure during probation, we will retry to
-     * unprotect with this ROC value as well.
-     * Set prev_rx_roc.ssrc to 0 to disable this feature.
-     */
-    pjmedia_srtp_roc		 prev_rx_roc;
-
-    /**
-     * RTP sequence rollover counter initialization value for outgoing
-     * direction. This is useful to maintain ROC after media transport
-     * recreation such as in IP change scenario.
-     */
-    pjmedia_srtp_roc		 tx_roc;
-
-    /**
-     * Specify SRTP callback.
-     */
-    pjmedia_srtp_cb		 cb;
-
-    /**
-     * Specify SRTP transport user data.
-     */
-    void			*user_data;
+    pjmedia_srtp_crypto		crypto[8];
 
 } pjmedia_srtp_setting;
 
@@ -314,50 +191,7 @@ typedef struct pjmedia_srtp_info
      */
     pjmedia_srtp_use		peer_use;
 
-    /**
-     * RTP sequence rollover counter info for incoming direction.
-     */
-    pjmedia_srtp_roc		rx_roc;
-
-    /**
-     * RTP sequence rollover counter info for outgoing direction.
-     */
-    pjmedia_srtp_roc		tx_roc;
-
 } pjmedia_srtp_info;
-
-
-/**
- * This structure specifies DTLS-SRTP negotiation parameters.
- */
-typedef struct pjmedia_srtp_dtls_nego_param
-{
-    /**
-     * Fingerprint of remote certificate, should be formatted as
-     * "SHA-256/1 XX:XX:XX...". If this is not set, fingerprint verification
-     * will not be performed.
-     */
-    pj_str_t		 rem_fingerprint;
-
-    /**
-     * Remote address and port.
-     */
-    pj_sockaddr		 rem_addr;
-
-    /**
-     * Remote RTCP address and port.
-     */
-    pj_sockaddr		 rem_rtcp;
-
-    /**
-     * Set to PJ_TRUE if our role is active. Active role will initiates
-     * the DTLS negotiation. Passive role will wait for incoming DTLS
-     * negotiation packet.
-     */
-    pj_bool_t		 is_role_active;
-
-} pjmedia_srtp_dtls_nego_param;
-
 
 
 /**
@@ -383,34 +217,6 @@ PJ_DECL(void) pjmedia_srtp_setting_default(pjmedia_srtp_setting *opt);
 
 
 /**
- * Enumerate available SRTP crypto name.
- *
- * @param count	    On input, specifies the maximum length of crypto
- *		    array. On output, the number of available crypto
- *		    initialized by this function.
- * @param crypto    The SRTP crypto array output.
- *
- * @return	    PJ_SUCCESS on success.
- */
-PJ_DECL(pj_status_t) pjmedia_srtp_enum_crypto(unsigned *count,
-					      pjmedia_srtp_crypto crypto[]);
-
-
-/**
- * Enumerate available SRTP keying methods.
- *
- * @param count	    On input, specifies the maximum length of keying method
- *		    array. On output, the number of available keying method
- *		    initialized by this function.
- * @param keying    The SRTP keying method array output.
- *
- * @return	    PJ_SUCCESS on success.
- */
-PJ_DECL(pj_status_t) pjmedia_srtp_enum_keying(unsigned *count,
-				      pjmedia_srtp_keying_method keying[]);
-
-
-/**
  * Create an SRTP media transport.
  *
  * @param endpt	    The media endpoint instance.
@@ -428,75 +234,6 @@ PJ_DECL(pj_status_t) pjmedia_transport_srtp_create(
 				       pjmedia_transport *tp,
 				       const pjmedia_srtp_setting *opt,
 				       pjmedia_transport **p_tp);
-
-/**
- * Get current SRTP media transport setting.
- *
- * @param srtp	    The SRTP transport.
- * @param opt	    Structure to receive the SRTP setting
- *
- * @return	    PJ_SUCCESS on success.
- */
-PJ_DECL(pj_status_t) pjmedia_transport_srtp_get_setting(
-				       pjmedia_transport *srtp,
-				       pjmedia_srtp_setting *opt);
-
-
-/**
- * Modify SRTP media transport setting.
- *
- * @param srtp	    The SRTP transport.
- * @param opt	    New setting
- *
- * @return	    PJ_SUCCESS on success.
- */
-PJ_DECL(pj_status_t) pjmedia_transport_srtp_modify_setting(
-				       pjmedia_transport *srtp,
-				       const pjmedia_srtp_setting *opt);
-
-/**
- * Get fingerprint of local DTLS-SRTP certificate.
- *
- * @param srtp	    The SRTP transport.
- * @param hash	    Fingerprint hash algorithm, currently valid values are
- *		    "SHA-256" and "SHA-1".
- * @param buf	    Buffer for fingerprint output. The output will be
- *		    formatted as "SHA-256/1 XX:XX:XX..." and null terminated.
- * @param len	    On input, the size of the buffer.
- *		    On output, the length of the fingerprint.
- *
- * @return	    PJ_SUCCESS on success.
- */
-PJ_DECL(pj_status_t) pjmedia_transport_srtp_dtls_get_fingerprint(
-				pjmedia_transport *srtp,
-				const char *hash,
-				char *buf, pj_size_t *len);
-
-
-/**
- * Manually start DTLS-SRTP negotiation with the given parameters. Application
- * only needs to call this function when the SRTP transport is used without
- * SDP offer/answer. When SDP offer/answer framework is used, the DTLS-SRTP
- * negotiation will be handled by pjmedia_transport_media_create(),
- * pjmedia_transport_media_start(), pjmedia_transport_media_encode_sdp(), and
- * pjmedia_transport_media_stop().
- *
- * When the negotiation completes, application will be notified via SRTP
- * callback on_srtp_nego_complete(), if set. If the negotiation is successful,
- * SRTP will be automatically started.
- *
- * Note that if the SRTP member transport is an ICE transport, application
- * should only call this function after ICE negotiation is completed
- * successfully.
- *
- * @param srtp	    The SRTP transport.
- * @param param	    DTLS-SRTP nego parameter.
- *
- * @return	    PJ_SUCCESS on success.
- */
-PJ_DECL(pj_status_t) pjmedia_transport_srtp_dtls_start_nego(
-				pjmedia_transport *srtp,
-				const pjmedia_srtp_dtls_nego_param *param);
 
 
 /**
