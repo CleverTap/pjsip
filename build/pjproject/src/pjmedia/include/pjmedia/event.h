@@ -82,7 +82,12 @@ typedef enum pjmedia_event_type
     /**
      * Video orientation has been changed event.
      */
-    PJMEDIA_EVENT_ORIENT_CHANGED = PJMEDIA_FOURCC('O', 'R', 'N', 'T')
+    PJMEDIA_EVENT_ORIENT_CHANGED = PJMEDIA_FOURCC('O', 'R', 'N', 'T'),
+
+    /**
+     * RTCP-FB has been received.
+     */
+    PJMEDIA_EVENT_RX_RTCP_FB = PJMEDIA_FOURCC('R', 'T', 'F', 'B')
 
 } pjmedia_event_type;
 
@@ -259,6 +264,8 @@ typedef enum pjmedia_event_mgr_flag
 {
     /**
      * Tell the event manager not to create any event worker thread.
+     * Do not set this flag if app plans to publish an event using
+     * PJMEDIA_EVENT_PUBLISH_POST_EVENT.
      */
     PJMEDIA_EVENT_MGR_NO_THREAD = 1
 

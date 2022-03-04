@@ -184,8 +184,17 @@ typedef struct pj_ssl_cert_info {
     pj_str_t raw;		    /**< Raw certificate in PEM format, only
 					 available for remote certificate. */
 
+    struct {
+        unsigned    	cnt;        /**< # of entry     */
+        pj_str_t       *cert_raw;
+    } raw_chain;
+
 } pj_ssl_cert_info;
 
+/**
+ * The SSL certificate buffer.
+ */
+typedef pj_str_t pj_ssl_cert_buffer;
 
 /**
  * Create credential from files. TLS server application can provide multiple
@@ -236,6 +245,25 @@ PJ_DECL(pj_status_t) pj_ssl_cert_load_from_files2(
 						const pj_str_t *privkey_pass,
 						pj_ssl_cert_t **p_cert);
 
+
+/**
+ * Create credential from data buffer. The certificate expected is in 
+ * PEM format.
+ *
+ * @param CA_file	The buffer of trusted CA list.
+ * @param cert_file	The buffer of certificate.
+ * @param privkey_file	The buffer of private key.
+ * @param privkey_pass	The password of private key, if any.
+ * @param p_cert	Pointer to credential instance to be created.
+ *
+ * @return		PJ_SUCCESS when successful.
+ */
+PJ_DECL(pj_status_t) pj_ssl_cert_load_from_buffer(pj_pool_t *pool,
+					const pj_ssl_cert_buffer *CA_buf,
+					const pj_ssl_cert_buffer *cert_buf,
+					const pj_ssl_cert_buffer *privkey_buf,
+					const pj_str_t *privkey_pass,
+					pj_ssl_cert_t **p_cert);
 
 /**
  * Dump SSL certificate info.
