@@ -269,6 +269,7 @@ PJ_INLINE(const pj_str_t*) pjsip_uri_get_scheme(const void *uri)
  */
 PJ_INLINE(void*) pjsip_uri_get_uri(const void *uri)
 {
+    PJ_ASSERT_RETURN(uri, NULL);
     return (*((pjsip_uri*)uri)->vptr->p_get_uri)((void*)uri);
 }
 
